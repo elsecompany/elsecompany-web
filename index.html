@@ -2,1502 +2,1490 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>The Else Company</title>
-    <meta name="description" id="meta-description"
-          content="The Else Company: curated secondhand fashion with a firsthand feeling. Coming soon.">
-    <meta property="og:title" content="The Else Company">
-    <meta property="og:description" content="Curated secondhand fashion with a firsthand feeling. Coming soon.">
-    <meta property="og:image" content="https://else-secondhand.com/logo.png">
-    <meta property="og:url" content="https://else-secondhand.com">
-    <meta name="twitter:card" content="summary">
-    <link rel="icon" href="version_1-blanco.png">
+    <meta name="description" content="ELSE combines secondhand fashion with artificial intelligence for a more personal way to discover what you wear.">
+    <link rel="icon" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
     <style>
-        /* Layout tokens. The mobile values (see the media query at the bottom) are measured
-           from the mobile mockup at 393 px wide. */
+        /* ---------- Photos ----------
+           Web-sized copies live in img/web (the originals in img/ are untouched).
+           The rotating first-screen photos are listed in HERO_PHOTOS (script). */
         :root {
-            --logo-h: clamp(96px, 33vw, 312px);   /* height of the logo image */
-            --cat-font: 0.8rem;                   /* "Curated AI Fashion" size */
-            --cat-lh: 1.2;
-            --cat-gap: 18px;                      /* space between categories and logo */
-            --cat-h: calc(var(--cat-font) * var(--cat-lh) + var(--cat-gap));
-            --logo-shift: 0.35;                   /* Early access: how far the logo moves up (x logo height) */
-            --logo-scale: 0.856;                  /* Early access: logo size */
-            --panel-top: calc(var(--cat-h) + 0.334 * var(--logo-h) + 90px); /* Early access form position */
-            --panel-w: 340px;
-            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+            --photo-hero:   url("img/web/hero-2.jpg");
+            --photo-brands: url("img/web/brands.jpg");
+
+            --ink: #3a4660;
+            --heading: #23397a;
+            --mark: #c9d6f0;
+            --bg: #f8faff;
+            --soft: #a9c0f2;
+            --footer: #b7ccf8;
+            --sans: "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+            --serif: "Instrument Serif", "Times New Roman", serif;
+            --gutter: clamp(20px, 3.2vw, 56px);
         }
 
-        /* Background (grain + tint + photo) lives on <html>, with no fixed-position layers:
-           on iPhone, Safari paints a solid colour behind its bars whenever a fixed element
-           touches the screen edges. Without one, the photo continues behind the bars. */
-        html {
-            min-height: 100%;
-            overflow-x: hidden;
-            background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.08'/></svg>"),
-            linear-gradient(rgba(161, 192, 255, 0.15), rgba(161, 192, 255, 0.15)),
-            url("fondo.jpg") center / cover no-repeat,
-            #506893; /* = top edge of the photo; Safari shows this colour above the page */
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
 
         body {
-            position: relative;
-            margin: 0;
-            /* "Large" viewport height: the page also reaches under Safari's bottom toolbar,
-               so the photo shows there instead of a band of colour */
-            min-height: 100vh;
-            min-height: 100lvh;
+            font-family: var(--sans);
+            font-weight: 300;
+            color: var(--ink);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        a { color: inherit; }
+
+        .photo {
+            background-size: cover;
+            background-position: center;
+            background-color: #b7c6e4;
+        }
+
+        .serif-title {
+            font-family: var(--serif);
+            font-style: italic;
             font-weight: 400;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            color: #ffffff;
-            text-align: center;
-            padding: max(40px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
-            max(40px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-            /* Keep the footer above the toolbar: add the space the toolbar covers */
-            padding-bottom: calc(max(40px, env(safe-area-inset-bottom)) + 100lvh - 100svh);
-            box-sizing: border-box;
+            color: var(--heading);
+            font-size: clamp(30px, 3.4vw, 54px);
+            line-height: 1.05;
+            letter-spacing: -0.01em;
         }
 
-        /* No bold anywhere on the page */
-        h1, h2, h3, b, strong, th, button {
-            font-weight: 400;
-        }
+        p { font-size: clamp(14px, 1.05vw, 17px); line-height: 1.55; }
+        p + p { margin-top: 1em; }
 
-        /* Nothing inside changes height between views, so the block never jumps */
-        .center-content {
-            position: absolute;
-            top: 30%;
-            top: 30svh;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .logo-stack {
-            position: relative;
-            display: grid;
-            place-items: start center;
-        }
-
-        .logo-stack > div {
-            grid-area: 1 / 1;
-            transition: opacity 1.2s ease, filter 1.2s ease, transform 1.2s ease;
-        }
-
-        .logo-stack > div.is-hidden {
-            opacity: 0;
-            filter: blur(10px);
-            transform: scale(0.96);
-            pointer-events: none;
-        }
-
-        /* ---------- Home ---------- */
-
-        .categories {
-            display: flex;
-            justify-content: center;
-            gap: clamp(16px, 10vw, 120px);
-            margin: 0;
-            font-size: var(--cat-font);
-            font-weight: 400;
-            line-height: var(--cat-lh);
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-
-        .categories-wrap {
-            margin-bottom: var(--cat-gap);
-        }
-
+        /* ---------- Logo (image if present, text otherwise) ----------
+           Put logo-else-white.png / logo-mark-blue.png next to this file and
+           they replace the text automatically. */
+        .logo img { display: none; width: 100%; height: auto; }
+        .logo.has-img img { display: block; }
+        .logo.has-img .logo-text { display: none; }
         .logo-text {
-            margin: 0 0 15px 0;
-            line-height: 0;
-            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
-            transform-origin: 50% 50%;
-            transition: transform 1.1s var(--ease-out);
-        }
-
-        .logo-img {
             display: block;
-            height: var(--logo-h);
-            width: auto;
-            margin: 0 auto;
-        }
-
-        #home-view .logo-img {
-            animation: logo-reveal 4s var(--ease-out) both,
-            logo-float 10s ease-in-out 3s infinite;
-        }
-
-        @keyframes logo-reveal {
-            from {
-                opacity: 0;
-                filter: blur(24px);
-                transform: scale(4);
-            }
-            to {
-                opacity: 1;
-                filter: blur(0);
-                transform: scale(1);
-            }
-        }
-
-        @keyframes logo-float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-6px);
-            }
-        }
-
-        .footer-text {
-            margin: 0;
-            font-size: 12pt;
+            font-family: var(--serif);
             font-weight: 400;
-            max-width: 450px;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .tagline-wrap {
-            margin-top: 6px;
-        }
-
-        /* Elements that fade away (but keep their space) when switching views */
-        .categories-wrap,
-        .tagline-wrap {
-            transition: opacity 0.8s ease 0.25s, filter 0.8s ease 0.25s, visibility 0s;
-        }
-
-        body.view-newsletter .categories-wrap,
-        body.view-newsletter .tagline-wrap,
-        body.view-about .tagline-wrap {
-            opacity: 0;
-            filter: blur(8px);
-            visibility: hidden;
-            transition: opacity 0.5s ease, filter 0.5s ease, visibility 0s linear 0.5s;
-        }
-
-        /* Early access: the logo glides up and gets a little smaller */
-        body.view-newsletter .logo-text {
-            transform: translateY(calc(var(--logo-shift) * var(--logo-h) * -1)) scale(var(--logo-scale));
-        }
-
-        /* ---------- About ---------- */
-
-        /* Sits over the logo area; "Coming soon" lands on the same line as the categories */
-        #about-view {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(560px, 90vw);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            line-height: 0.8;
             text-align: center;
-        }
-
-        #about-view .coming-soon {
-            margin: 0 0 32px 0;
-            font-size: 20pt;
-            font-weight: 400;
-            line-height: calc(var(--cat-font) * var(--cat-lh));
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .contact-info {
-            width: 100%;
-            font-size: 12pt;
-            font-weight: 400;
-            max-width: 520px;
-            line-height: 1.6;
-            opacity: 0.95;
-            text-align: center;
-        }
-
-        .contact-info p {
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        /* Underlined so it reads as a link */
-        .contact-info p a {
-            color: #ffffff;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        .contact-info p a:hover {
-            opacity: 0.8;
-        }
-
-        .socials a {
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .socials a:hover {
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        .socials {
-            margin-top: 28px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 12pt;
-            font-weight: 400;
-            letter-spacing: 0;
-        }
-
-        .socials a + a::before {
-            content: "·";
-            display: inline-block;
-            margin: 0 14px;
-            text-decoration: none;
-        }
-
-        /* ---------- Footer & buttons ---------- */
-
-        .footer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            margin-top: auto;
-        }
-
-        .cta-row {
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-        }
-
-        /* Glass button: About us, Early access and both Back buttons */
-        .glass-btn {
-            position: relative;
-            overflow: hidden;
-            isolation: isolate;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            width: 150px;
-            height: 38px;
-            margin: 0;
-            padding: 0 12px;
-            border-radius: 999px;
-            border: 2px solid transparent;
-            background: transparent;
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            box-shadow:
-                    inset 0 1px 1px rgba(255, 255, 255, 0.5),
-                    inset 0 -1px 1px rgba(255, 255, 255, 0.3),
-                    0 4px 12px rgba(31, 45, 80, 0.08);
-            color: #ffffff;
-            font-family: inherit;
-            font-size: 10pt;
-            font-weight: 400;
-            letter-spacing: 0.06em;
-            line-height: 1;
-            text-transform: uppercase;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
             white-space: nowrap;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Gradient rim */
-        .glass-btn::before {
+        /* ---------- Hero: giant logo, then "who we are" ----------
+           The hero is taller than the screen and its panel sticks to the top.
+           JS turns the scroll into --p (0 → 1): the giant logo travels up and
+           shrinks into the small top logo, and "who we are" rises in. */
+        :root { --p: 0; --q: 0; --g: 0; --l: 0; --f: 0; --ty: 50vh; --vh: 100vh; --bar: clamp(52px, 4.6vw, 64px); }
+        .hero { position: relative; height: 220vh; }
+
+        .hero-panel {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100svh;
+            overflow: hidden;
+            background-image: var(--photo-hero);
+            color: #fff;
+        }
+
+        /* Logo stays fixed: giant in the middle, then small at the top.
+           On the photo it is white; over the white page it turns blue. */
+        /* Rotating hero photos: crossfade plus a very slow zoom */
+        .hero-slides { position: absolute; inset: 0; overflow: hidden; }
+
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 2s ease, transform 9s linear;
+        }
+
+        .hero-slide.active { opacity: 1; transform: scale(1); }
+
+        /* Light blue veil so the white logo and text read on pale photos too */
+        .hero-slides::after {
             content: "";
             position: absolute;
             inset: 0;
-            border-radius: inherit;
-            padding: 2px;
-            background: linear-gradient(
-                    160deg,
-                    rgba(255, 255, 255, 0.95) 0%,
-                    rgba(255, 255, 255, 0.4) 35%,
-                    rgba(255, 255, 255, 0.2) 60%,
-                    rgba(255, 255, 255, 0.6) 100%
-            );
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Soft top sheen */
-        .glass-btn::after {
-            content: "";
-            position: absolute;
-            top: 1px;
-            left: 6%;
-            width: 88%;
-            height: 55%;
-            border-radius: 999px 999px 50% 50%;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 80%);
-            filter: blur(1px);
-            pointer-events: none;
-            z-index: -1;
-            transition: background 0.2s ease;
-        }
-
-        /* Hover: parallel shadow #38547F at 80% */
-        .glass-btn:hover {
-            box-shadow:
-                    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-                    inset 0 -1px 2px rgba(255, 255, 255, 0.3),
-                    0 10px 28px rgba(56, 84, 127, 0.8);
-        }
-
-        .glass-btn:hover::after {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
-        }
-
-        .glass-btn:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.8);
-            outline-offset: 3px;
-        }
-
-        .legal {
-            margin-top: 30px;
-            font-size: 10pt;
-            font-weight: 400;
-            line-height: 1.6;
-            opacity: 0.8;
-        }
-
-        /* Underlined so they read as links */
-        .legal a {
-            color: #ffffff;
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        .legal a:hover {
-            opacity: 0.8;
-        }
-
-        /* ---------- Early access ---------- */
-
-        /* Form under the logo; fades in once the logo has moved up */
-        .newsletter-panel {
-            position: absolute;
-            top: var(--panel-top);
-            left: 50%;
-            width: min(var(--panel-w), 85vw);
-            opacity: 0;
-            visibility: hidden;
-            transform: translate(-50%, 14px);
-            filter: blur(6px);
-            transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease, visibility 0s linear 0.4s;
-        }
-
-        body.view-newsletter .newsletter-panel {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, 0);
-            filter: blur(0);
-            transition: opacity 0.9s ease 0.45s, transform 0.9s var(--ease-out) 0.45s,
-            filter 0.9s ease 0.45s, visibility 0s;
-        }
-
-        .newsletter-form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .newsletter-row {
-            display: flex;
-            gap: 6px;
-        }
-
-        .newsletter-row input[type="email"] {
-            flex: 1;
-            min-width: 0;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 8pt;
-            font-weight: 400;
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.75);
-            border-radius: 999px;
-            padding: 10px 16px;
-            outline: none;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
-            transition: background 0.2s ease, border-color 0.2s ease;
-        }
-
-        .newsletter-row input[type="email"]:focus {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #ffffff;
-        }
-
-        .newsletter-row input[type="email"]::placeholder {
-            color: rgba(255, 255, 255, 0.75);
-        }
-
-        .newsletter-submit {
-            font-family: inherit;
-            font-size: 8pt;
-            font-weight: 400;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            color: #ffffff;
-            background: #a1c0ff;
-            border: none;
-            border-radius: 999px;
-            padding: 10px 18px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-width: 112px;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .newsletter-submit:hover {
-            background: #8fb2fb;
-        }
-
-        .spinner {
-            width: 10px;
-            height: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .consent {
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            padding: 0 8px;
-            text-align: left;
-            font-size: 8pt;
-            line-height: 1.35;
-            cursor: pointer;
-        }
-
-        .consent input {
-            flex-shrink: 0;
-            margin: 2px 0 0 0;
-            accent-color: #a1c0ff;
-        }
-
-        .newsletter-status {
-            margin: 0;
-            padding: 0 8px;
-            text-align: left;
-            font-size: 8pt;
-            min-height: 1em;
-        }
-
-        /* Legal note sits just above the Back button */
-        .newsletter-legal {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: calc(100% + 34px);
-            width: min(380px, 85vw);
-            margin: 0 auto;
-            font-size: 8pt;
-            line-height: 1.4;
-            opacity: 0.85;
-        }
-
-        .newsletter-legal a {
-            color: #ffffff;
-        }
-
-        .newsletter-success {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            animation: fade-up 0.8s ease-out both;
-        }
-
-        .success-icon {
-            width: 40px;
-            height: 40px;
-            color: #ffffff;
-        }
-
-        .success-title {
-            margin: 4px 0 0 0;
-            font-size: 1.1rem;
-            font-weight: 400;
-        }
-
-        .success-text {
-            margin: 0;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            overflow-wrap: anywhere;
-            opacity: 0.9;
-        }
-
-        .honeypot {
-            position: absolute;
-            left: -9999px;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-        }
-
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            clip: rect(0 0 0 0);
-            white-space: nowrap;
-        }
-
-        /* ---------- Entrance cascade ---------- */
-
-        .reveal {
-            animation: fade-up 1.2s ease-out both;
-            animation-delay: var(--delay, 0s);
-        }
-
-        .d1 {
-            --delay: 1.8s;
-        }
-
-        .d2 {
-            --delay: 2.2s;
-        }
-
-        .d3 {
-            --delay: 2.5s;
-        }
-
-        .d4 {
-            --delay: 2.8s;
-        }
-
-        body.is-replay .d1 {
-            --delay: 0s;
-        }
-
-        body.is-replay .d2 {
-            --delay: 0.3s;
-        }
-
-        body.is-replay .d3 {
-            --delay: 0.6s;
-        }
-
-        body.is-replay .d4 {
-            --delay: 0.9s;
-        }
-
-        [hidden] {
-            display: none !important;
-        }
-
-        @keyframes fade-up {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                transform: none;
-            }
+            background: linear-gradient(180deg, rgba(25, 45, 85, 0.22), rgba(25, 45, 85, 0.12) 45%, rgba(25, 45, 85, 0.24));
         }
 
         @media (prefers-reduced-motion: reduce) {
-            #home-view .logo-img,
-            .reveal,
-            .newsletter-success {
-                animation: none;
-            }
-
-            .logo-text,
-            .categories-wrap,
-            .tagline-wrap,
-            .newsletter-panel,
-            .logo-stack > div {
-                transition: none !important;
-            }
+            .hero-slide { transition: opacity 0.6s ease; transform: none; }
         }
 
-        /* ---------- Mobile (measured from the mockup) ---------- */
-        @media (max-width: 600px) {
-            :root {
-                --logo-h: 46vw;
-                --cat-font: 0.7rem;
-                --cat-gap: 16px;
-                --logo-shift: 0.78;
-                --panel-top: calc(var(--cat-h) + 0.429 * var(--logo-h));
-                --panel-w: 320px;
-            }
-
-            body {
-                padding: max(24px, env(safe-area-inset-top)) 16px calc(36px + env(safe-area-inset-bottom));
-                padding-bottom: calc(36px + env(safe-area-inset-bottom) + 100lvh - 100svh);
-            }
-
-            /* Anchored by its top edge so every view lines up exactly */
-            .center-content {
-                top: 23%;
-                top: 23svh;
-                transform: translateX(-50%);
-            }
-
-            .categories {
-                gap: 72px;
-            }
-
-            .logo-text {
-                margin: 0;
-            }
-
-            .tagline-wrap {
-                margin-top: 12px;
-            }
-
-            .footer-text,
-            .contact-info {
-                line-height: 1.35;
-                max-width: 330px;
-            }
-
-            #about-view .coming-soon {
-                letter-spacing: 0.08em;
-                margin-bottom: 36px;
-            }
-
-            .socials {
-                margin-top: 24px;
-            }
-
-            .socials a + a::before {
-                margin: 0 12px;
-            }
-
-            .cta-row {
-                gap: 27px;
-            }
-
-            .glass-btn {
-                width: auto;
-                height: 34px;
-                padding: 0 20px;
-            }
-
-            .about-back,
-            .newsletter-back {
-                width: 124px;
-            }
-
-            .legal {
-                margin-top: 40px;
-            }
-
-            .newsletter-form {
-                gap: 17px;
-            }
-
-            .newsletter-row {
-                gap: 4px;
-            }
-
-            .newsletter-row input[type="email"] {
-                height: 30px;
-                padding: 0 12px;
-            }
-
-            .newsletter-submit {
-                height: 30px;
-                min-width: 84px;
-                padding: 0 10px;
-            }
-
-            .spinner {
-                width: 7px;
-                height: 7px;
-                border-width: 1.5px;
-            }
-
-            .consent {
-                padding: 0 6px;
-                gap: 5px;
-            }
-
-            .consent input {
-                width: 10px;
-                height: 10px;
-                margin-top: 2px;
-            }
-
-            .newsletter-status {
-                padding: 0 6px;
-            }
-
-            .newsletter-legal {
-                width: min(320px, 88vw);
-                line-height: 1.35;
-            }
-
-            .success-icon {
-                width: 30px;
-                height: 30px;
-            }
-
-            .success-title {
-                font-size: 0.9rem;
-            }
-
-            .success-text {
-                font-size: 0.7rem;
-            }
+        .hero-logo {
+            --big: min(70vw, 105vh);
+            --small: clamp(56px, 5.2vw, 84px);
+            position: fixed;
+            z-index: 30;
+            left: 50%;
+            top: calc((1 - var(--p)) * 50vh + var(--p) * var(--bar) / 2);
+            width: calc((1 - var(--p)) * var(--big) + var(--p) * var(--small));
+            transform: translate(-50%, -50%);
+            will-change: top, width;
         }
 
-        /* iPhone / iPad Safari only: the large viewport stops short of the home-indicator strip,
-           so the page is made 100px taller to carry the photo all the way to the bottom edge.
-           The footer keeps its position because the extra space is added to the bottom padding. */
-        @supports (-webkit-touch-callout: none) {
-            body {
-                min-height: calc(100lvh + 100px);
-                padding-bottom: calc(max(40px, env(safe-area-inset-bottom)) + 100lvh - 100svh + 100px);
-            }
+        .hero-logo img { display: block; width: 100%; height: auto; transition: opacity 0.35s ease; }
 
-            @media (max-width: 600px) {
-                body {
-                    padding-bottom: calc(36px + env(safe-area-inset-bottom) + 100lvh - 100svh + 100px);
-                }
-            }
+        /* "CURATED   AI   FASHION" across the top of the first screen; fades out on scroll */
+        .hero-tagline {
+            position: absolute;
+            z-index: 2;
+            top: clamp(36px, 6.5vh, 64px);
+            left: var(--gutter);
+            right: var(--gutter);
+            display: flex;
+            justify-content: space-between;
+            color: #fff;
+            font-size: clamp(13px, 1.15vw, 18px);
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: calc(1 - var(--p) * 3);
+            text-shadow: 0 1px 10px rgba(20, 38, 74, 0.25);
+            pointer-events: none;
+        }
+        .hero-logo .logo-blue { position: absolute; inset: 0; opacity: 0; }
+        .on-light .hero-logo .logo-blue { opacity: 1; }
+        .on-light .hero-logo .logo-white { opacity: 0; }
+
+        /* Glass bar (Apple-style): blurs whatever scrolls under it */
+        .glass-bar {
+            position: fixed;
+            z-index: 25;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: clamp(84px, 7.4vw, 104px);
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(3px);
+            backdrop-filter: blur(3px);
+            /* Fade the bottom edge so there is no visible line */
+            -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+            mask-image: linear-gradient(to bottom, #000 40%, transparent);
+            opacity: var(--g);
+            pointer-events: none;
+            transition: background 0.35s ease;
+        }
+
+        .on-light .glass-bar {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+
+        .hero-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 var(--gutter);
+            opacity: var(--q);
+            transform: translateY(calc((1 - var(--q)) * 45vh));
+        }
+
+        .hero-content > div { max-width: min(41vw, 640px); }
+        .hero-content > div { text-shadow: 0 1px 16px rgba(20, 38, 74, 0.35); }
+        .hero .serif-title { color: #fff; margin-bottom: 0.25em; }
+        .hero p { font-size: clamp(14px, 1.25vw, 19px); line-height: 1.4; font-weight: 400; }
+
+        /* ---------- Nav buttons ----------
+           They start at the bottom of the first screen and travel up into the
+           top bar with the logo. JS measures each button and sets --x0 (start)
+           and --x1 (end) and --o1 (opacity at the top). */
+        .nav-btn {
+            --x0: 0px; --x1: 0px; --s0: 1; --o1: 1;
+            position: fixed;
+            z-index: 30;
+            left: calc(var(--x0) + (var(--x1) - var(--x0)) * var(--p));
+            top: calc((1 - var(--p)) * (var(--vh) - var(--nav-bottom)) + var(--p) * var(--bar) / 2);
+            transform: translateY(-50%) scale(calc(1 + (var(--s0) - 1) * (1 - var(--p))));
+            opacity: calc(1 + (var(--o1) - 1) * var(--p));
+            visibility: hidden;
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: #fff;
+            /* Apple-style glass (on photos and on the blue footer) */
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.08));
+            -webkit-backdrop-filter: blur(14px) saturate(170%);
+            backdrop-filter: blur(14px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12), 0 6px 22px rgba(15, 30, 60, 0.16);
+            border-radius: 999px;
+            padding: 7px 22px;
+            cursor: pointer;
+            transition: color 0.35s ease, border-color 0.35s ease, background-color 0.25s ease;
+        }
+
+        .nav-ready .nav-btn { visibility: visible; }
+
+        /* End of the page: About us and Why else float away, Early access
+           glides to the centre, grows and fills in (--f goes 0 → 1). */
+        /* On the white part (--l → 1) About us leaves, Early access moves to the
+           left as "Join the waitlist" and Why else stays on the right. */
+        /* First change (giant logo → top bar): About us fades out, Early access
+           goes to the left, Why else stays on the right. */
+        #nav-about { opacity: calc((1 - var(--p)) * (1 - var(--f))); }
+        #nav-why { opacity: calc(1 - var(--f)); }
+        .nav-scrolled #nav-about { pointer-events: none; }
+
+        #nav-about, #nav-why {
+            transform: translateY(calc(-50% - var(--f) * 24px)) scale(calc(1 - var(--f) * 0.12));
+            filter: blur(calc(var(--f) * 4px));
+        }
+
+        #nav-early {
+            --sF: 1.7; --xF: 0px;
+            left: calc((var(--x0) + (var(--x1) - var(--x0)) * var(--p)) * (1 - var(--f)) + var(--xF) * var(--f));
+            top: calc(((1 - var(--p)) * (var(--vh) - var(--nav-bottom)) + var(--p) * var(--bar) / 2) * (1 - var(--f)) + var(--ty) * var(--f));
+            transform: translateY(-50%) scale(calc(1 + (var(--s0) - 1) * (1 - var(--p)) + (var(--sF) - 1) * var(--f)));
+        }
+
+        /* Soft glass behind Early access so it reads over text while it travels */
+        .on-light #nav-early {
+            background-color: rgba(255, 255, 255, calc(0.85 * min(1, var(--f) * 6)));
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+        }
+
+
+
+        /* Over the blue footer: white glass, like the design */
+        .on-light.cta-final #nav-early {
+            color: #fff;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.10));
+            -webkit-backdrop-filter: blur(14px) saturate(170%);
+            backdrop-filter: blur(14px) saturate(170%);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.15), 0 8px 26px rgba(40, 70, 140, 0.18);
+        }
+
+        .on-light.cta-final #nav-early:hover { background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.2)); }
+        .cta-final #nav-about, .cta-final #nav-why { pointer-events: none; }
+        .nav-btn:hover { background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.16)); }
+        .nav-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+        /* White part: plain outline, no glass */
+        .on-light .nav-btn {
+            color: var(--heading);
+            border-color: rgba(79, 111, 174, 0.7);
+            background: transparent;
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+        .nav-btn { transition: color 0.45s ease, border-color 0.45s ease, background-color 0.45s ease, box-shadow 0.45s ease; }
+        .on-light .nav-btn:hover { background: rgba(79, 111, 174, 0.08); }
+        .on-light .nav-btn:focus-visible { outline-color: var(--heading); }
+
+        :root { --nav-bottom: clamp(44px, 4.4vw, 64px); }
+
+        /* Little line on the first screen that says "scroll down" */
+        .scroll-line {
+            position: fixed;
+            z-index: 29;
+            left: 50%;
+            bottom: calc((1 - var(--p)) * (var(--nav-bottom) + 34px) + var(--p) * 28px);
+            width: 1px;
+            height: 46px;
+            margin-left: -0.5px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: calc(1 - var(--l));
+            pointer-events: none;
+        }
+
+        .scroll-line::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: -50%;
+            width: 1px;
+            height: 50%;
+            background: #fff;
+            animation: scroll-line 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+        }
+
+        @keyframes scroll-line {
+            0% { top: -50%; }
+            70%, 100% { top: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-line::after { animation: none; top: 25%; }
+        }
+
+        .rounded { border-radius: 6px; overflow: hidden; }
+
+        /* Each section fills the screen, content centred (room left for the top bar) */
+        .screen {
+            min-height: 100vh;
+            min-height: 100svh;
+            padding-top: calc(var(--bar) + clamp(20px, 3vw, 48px));
+            padding-bottom: clamp(32px, 4vw, 64px);
+        }
+
+        .screen-center { display: flex; flex-direction: column; justify-content: center; }
+        .split.screen { align-content: center; }
+
+        /* ---------- Word strips ---------- */
+        .strip {
+            padding: 0 clamp(4px, 0.4vw, 8px);
+            margin: 0 0 clamp(48px, 6vw, 96px);
+            color: var(--soft);
+            font-size: clamp(9px, 0.8vw, 12px);
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .strip-row { display: flex; justify-content: space-between; }
+        .strip-row + .strip-row { margin-top: clamp(8px, 1.2vw, 18px); }
+
+        /* ---------- Two-column blocks (text left, photos right) ---------- */
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: clamp(28px, 4vw, 72px);
+            align-items: start;
+            padding-left: var(--gutter);
+            padding-right: var(--gutter);
+        }
+
+        .split .serif-title { margin-bottom: 0.15em; }
+
+        /* ---------- What drives us ---------- */
+        .drives-photos { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 0.9vw, 14px); }
+        .drives-photos img { width: 100%; aspect-ratio: 0.68; object-fit: cover; display: block; }
+
+        /* ---------- More than clothes ---------- */
+        .more { display: flex; justify-content: center; }
+
+        .more-card {
+            position: relative;
+            width: min(45vw, 760px);
+            aspect-ratio: 1.53;
+            color: var(--heading);
+        }
+
+        .more-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .more-card::after {   /* soft white fade at the bottom so the title reads */
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(248, 250, 255, 0) 35%, rgba(248, 250, 255, 0.55) 75%, rgba(248, 250, 255, 0.7));
+        }
+
+        .more-inner {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 clamp(14px, 2vw, 30px) clamp(10px, 1.2vw, 20px);
+            text-align: center;
+        }
+
+        .more-tags {
+            display: flex;
+            justify-content: space-between;
+            font-size: clamp(9px, 0.85vw, 13px);
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: auto;
+            margin-top: 46%;
+        }
+
+        .more-card h2 {
+            font-family: var(--sans);
+            font-weight: 400;
+            font-size: clamp(26px, 3.9vw, 64px);
+            line-height: 1;
+            letter-spacing: -0.01em;
+        }
+
+        .more-card p {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: clamp(14px, 1.6vw, 26px);
+            line-height: 1.1;
+            margin-top: 0.15em;
+        }
+
+        /* ---------- Our nature ---------- */
+        .nature-photo { width: 100%; aspect-ratio: 1.84; object-fit: cover; display: block; }
+
+        /* "Hi! I'm else" pill */
+        .ask-row { grid-column: 1 / -1; display: flex; justify-content: center; margin-top: clamp(56px, 8vw, 130px); }
+
+        .ask-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: clamp(14px, 1.8vw, 28px);
+            min-width: min(580px, 100%);
+            padding: clamp(14px, 1.4vw, 22px) clamp(28px, 2.8vw, 44px);
+            border: 0;
+            border-radius: 999px;
+            background: #e4ecfd;
+            color: var(--heading);
+            font: 400 clamp(16px, 1.9vw, 28px) var(--sans);
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .ask-pill:hover { background: #dbe6fd; transform: translateY(-1px); box-shadow: 0 10px 30px rgba(79, 111, 174, 0.15); }
+        .ask-pill:focus-visible { outline: 2px solid var(--heading); outline-offset: 4px; }
+        .ask-pill img { height: 1.15em; width: auto; flex: 0 0 auto; }
+        .ask-text { white-space: nowrap; min-height: 1.2em; text-align: left; }
+
+        .ask-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.05em;
+            margin-left: 3px;
+            vertical-align: -0.12em;
+            background: var(--heading);
+            animation: ask-blink 1s steps(1) infinite;
+        }
+
+        @keyframes ask-blink { 50% { opacity: 0; } }
+
+        /* ---------- Our brands ---------- */
+        .brands {
+            position: relative;
+            padding-left: var(--gutter);
+            padding-right: var(--gutter);
+            background: var(--photo-brands) center / cover no-repeat;
+            color: #fff;
+            text-align: center;
+        }
+
+        .brands::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(120, 155, 225, 0.18);
+        }
+
+        .brands > * { position: relative; }
+        .brands .serif-title { color: #fff; margin-bottom: 0.2em; }
+
+        .brands-intro {
+            max-width: 560px;
+            margin: 0 auto;
+            text-shadow: 0 1px 12px rgba(30, 60, 120, 0.25);
+        }
+
+        .brand-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(14px, 3vw, 56px);
+            max-width: 1180px;
+            margin: clamp(36px, 4.4vw, 72px) auto 0;
+        }
+
+        .brand-card {
+            padding: clamp(18px, 1.8vw, 28px) clamp(16px, 2vw, 30px) clamp(22px, 2.2vw, 34px);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            text-shadow: 0 1px 10px rgba(30, 60, 120, 0.25);
+        }
+
+        .brand-card h3 {
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(24px, 2.3vw, 38px);
+            line-height: 1.1;
+        }
+
+        .brand-card .kicker {
+            margin: 0.7em 0 1.4em;
+            font-size: clamp(9px, 0.75vw, 12px);
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .brand-card p:last-child { font-size: clamp(13px, 0.95vw, 15px); line-height: 1.45; font-weight: 400; }
+
+        /* ---------- Future ---------- */
+        .future { padding-left: var(--gutter); padding-right: var(--gutter); }
+        .future-text { max-width: 50%; }
+        .future-text .serif-title { margin-bottom: 0.15em; }
+        .future-banner { width: 100%; aspect-ratio: 4.9; object-fit: cover; display: block; margin-top: clamp(28px, 3vw, 48px); }
+
+        /* ---------- Closing line ---------- */
+        .closing {
+            text-align: center;
+            color: var(--soft);
+            font-size: clamp(26px, 3.6vw, 58px);
+            line-height: 1.08;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            padding: 0 var(--gutter);
+            margin: 0;
+        }
+
+        .closing em { font-family: var(--serif); font-style: italic; }
+
+        /* ---------- Footer ---------- */
+        .footer {
+            position: relative;
+            background: var(--footer);
+            color: #fff;
+            padding: calc(var(--bar) + clamp(40px, 6vw, 110px)) var(--gutter) clamp(18px, 1.8vw, 28px);
+            min-height: 100vh;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .footer-cta { max-width: 340px; padding-left: clamp(0px, 3vw, 48px); }
+        .footer-cta .kicker { font-size: clamp(12px, 0.95vw, 15px); font-weight: 400; margin-bottom: 14px; }
+
+        /* Empty slot: the Early access button lands here at the end of the page */
+        .waitlist-slot { height: 56px; width: 280px; }
+
+        .footer-cta .note { margin-top: 16px; font-size: clamp(12px, 0.95vw, 15px); line-height: 1.35; font-weight: 400; }
+
+        .footer-mark {
+            position: absolute;
+            right: clamp(20px, 5vw, 90px);
+            bottom: clamp(62px, 5.6vw, 96px);
+            width: clamp(180px, 30vw, 500px);
+            pointer-events: none;
+        }
+
+        .footer-mark img { width: 100%; height: auto; display: block; }
+
+        .footer-row {
+            position: relative;
+            z-index: 1;
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px clamp(28px, 3.6vw, 60px);
+            align-items: flex-end;
+            font-size: clamp(10px, 0.8vw, 12px);
+            font-weight: 400;
+        }
+
+        .footer-row a { text-decoration: underline; text-underline-offset: 2px; }
+        .footer-row .follow a { text-decoration: none; }
+        .footer-row .follow a:hover { text-decoration: underline; }
+
+        /* ---------- Early access popup ---------- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(20, 38, 74, 0.2);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+        }
+
+        .modal.open { opacity: 1; visibility: visible; transition: opacity 0.45s ease; }
+
+        .modal-card {
+            position: relative;
+            width: min(560px, 100%);
+            padding: clamp(36px, 4vw, 52px) clamp(24px, 4vw, 56px) clamp(32px, 3.4vw, 44px);
+            border-radius: 28px;
+            text-align: center;
+            color: #fff;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.12));
+            -webkit-backdrop-filter: blur(26px) saturate(140%);
+            backdrop-filter: blur(26px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 24px 60px rgba(15, 30, 60, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transform: translateY(16px) scale(0.98);
+            transition: transform 0.45s ease;
+        }
+
+        .modal.open .modal-card { transform: none; }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: #fff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .modal-close:hover { background: rgba(255, 255, 255, 0.16); }
+
+        .modal-title {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-shadow: 0 1px 8px rgba(15, 30, 60, 0.25);
+        }
+
+        .modal-input {
+            display: block;
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+            font: 400 15px var(--sans);
+            text-align: center;
+            outline: none;
+        }
+
+        .modal-input::placeholder { color: rgba(35, 50, 79, 0.45); }
+        .modal-input:focus { background: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45); }
+
+        .modal-consent {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            text-align: left;
+            margin: 22px auto 0;
+            max-width: 400px;
+            font-size: 13px;
+            line-height: 1.45;
+            font-weight: 400;
+            cursor: pointer;
+            text-shadow: 0 1px 8px rgba(15, 30, 60, 0.25);
+        }
+
+        .modal-consent a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+
+        .modal-consent input {
+            appearance: none;
+            -webkit-appearance: none;
+            flex: 0 0 auto;
+            width: 20px;
+            height: 20px;
+            margin-top: 1px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.25);
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+        }
+
+        .modal-consent input:checked { background: #fff; }
+        .modal-consent input:checked::after {
+            content: "";
+            width: 10px;
+            height: 6px;
+            border-left: 2px solid var(--heading);
+            border-bottom: 2px solid var(--heading);
+            transform: translateY(-1px) rotate(-45deg);
+        }
+
+        .modal-consent input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+        .modal-submit {
+            margin-top: 26px;
+            padding: 11px 34px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.10));
+            -webkit-backdrop-filter: blur(14px) saturate(170%);
+            backdrop-filter: blur(14px) saturate(170%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12), 0 6px 20px rgba(15, 30, 60, 0.14);
+            color: #fff;
+            font: 500 13px var(--sans);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .modal-submit:hover { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.22)); }
+        .modal-submit:disabled { cursor: default; }
+
+        /* Saving: spinner inside the button, form dimmed */
+        .modal-submit { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+        .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        .modal.saving .spinner { display: inline-block; }
+        .modal.saving .modal-input, .modal.saving .modal-consent { opacity: 0.55; pointer-events: none; transition: opacity 0.3s ease; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .done-mark { height: 30px; width: auto; display: block; margin: 0 auto 16px; filter: brightness(0) invert(1); }
+        .modal.sent .modal-done { animation: done-in 0.5s ease both; }
+        @keyframes done-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        .modal-error {
+            min-height: 1.4em;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #fff;
+            text-shadow: 0 1px 8px rgba(15, 30, 60, 0.35);
+        }
+
+        .modal-ask { display: none; }
+        .modal.ask .modal-ask { display: block; }
+        .modal.ask .modal-form, .modal.ask .modal-done { display: none; }
+        .modal-ask img { height: 34px; width: auto; margin: 0 auto 18px; display: block; filter: brightness(0) invert(1); }
+        .modal-ask .modal-title { margin-bottom: 12px; }
+        .modal-ask p:not(.modal-title) { font-size: 15px; line-height: 1.5; max-width: 380px; margin: 0 auto; text-shadow: 0 1px 8px rgba(15, 30, 60, 0.25); }
+
+        .modal-done { display: none; }
+        .modal-done p { font-size: 15px; margin-top: 6px; text-shadow: 0 1px 8px rgba(15, 30, 60, 0.25); }
+        .modal.sent .modal-form { display: none; }
+        .modal.sent .modal-done { display: block; }
+
+        /* ---------- Gentle reveal on scroll ---------- */
+        .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.9s ease, transform 0.9s ease; }
+        .reveal.in { opacity: 1; transform: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+
+        /* ---------- Mobile ---------- */
+        @media (max-width: 760px) {
+            :root { --bar: 52px; }
+            .hero-logo { --big: 84vw; --small: 58px; }
+            .nav-btn { font-size: 10px; padding: 7px 14px; }
+            .glass-bar { height: 84px; }
+            .hero-content > div { max-width: 100%; }
+
+            /* Sections keep their natural height on phones (no big white gaps) */
+            .screen { min-height: 0; padding-top: 64px; padding-bottom: 64px; }
+            .drives.screen { padding-top: calc(var(--bar) + 40px); }
+            .brands.screen { padding-top: 72px; padding-bottom: 72px; }
+
+            .strip { font-size: 10px; letter-spacing: 0.2em; padding: 0 9vw; margin: 0 0 32px; }
+            .strip-row + .strip-row { margin-top: 18px; }
+            .closing { font-size: 8.6vw; line-height: 1.12; padding: 0 9vw; }
+            .closing br { display: none; }
+
+            .ask-row { margin-top: 40px; }
+            .ask-pill { min-width: 0; width: 100%; justify-content: center; font-size: 15px; padding: 14px 20px; gap: 12px; }
+
+            .split { grid-template-columns: 1fr; row-gap: 26px; }
+            .drives-photos img { aspect-ratio: 0.75; }
+
+            .more-card { width: calc(100vw - 2 * var(--gutter)); }
+            .more-tags { margin-top: 40%; }
+
+            .brand-cards { grid-template-columns: 1fr; max-width: 420px; }
+
+            .future-text { max-width: 100%; }
+            .future-banner { aspect-ratio: 2.6; }
+
+            .footer { padding: 120px 9vw 32px; align-items: center; text-align: center; }
+            .footer-cta { padding-left: 0; max-width: 100%; display: flex; flex-direction: column; align-items: center; }
+            .footer-cta .kicker { font-size: 17px; margin-bottom: 18px; }
+            .footer-cta .note { font-size: 17px; line-height: 1.3; margin-top: 20px; max-width: 300px; }
+            .footer-mark { position: relative; right: auto; bottom: auto; width: 82vw; margin: auto 0 30px; }
+            .footer-row { flex-direction: column; align-items: center; gap: 10px; margin-top: 0; font-size: 13px; font-weight: 500; }
+            .footer-row .follow { order: -1; }
         }
     </style>
 </head>
 <body>
 
-<div class="center-content">
-    <div class="logo-stack">
-        <div id="home-view">
-            <div class="categories-wrap">
-                <div class="categories reveal d1">
-                    <span>Curated</span>
-                    <span>AI</span>
-                    <span>Fashion</span>
-                </div>
-            </div>
-            <h1 class="logo-text"><img src="version_1-blanco.png" alt="ELSE" class="logo-img"></h1>
-        </div>
+<div class="glass-bar" aria-hidden="true"></div>
+<a class="hero-logo" href="#top" aria-label="else, back to top">
+    <img class="logo-white" src="img/logo-else-white.png" alt="else">
+    <img class="logo-blue" src="img/logo-else-blue.png" alt="" aria-hidden="true">
+</a>
 
-        <div id="about-view" class="is-hidden" inert>
-            <p class="coming-soon reveal d1" data-i18n="comingSoon">Coming soon</p>
+<span class="scroll-line" aria-hidden="true"></span>
 
-            <div class="contact-info reveal d2" id="contact-info">
-                <p data-i18n-html="contactIntro">
-                    Reach out to ${ELSE_LINK} for general and press inquiries,
-                    and follow us along at the links below.
-                </p>
+<nav aria-label="Main">
+    <button class="nav-btn" id="nav-about" type="button">About us</button>
+    <button class="nav-btn" id="nav-early" type="button">Early access</button>
+    <button class="nav-btn" id="nav-why" type="button">Why else</button>
+</nav>
 
-                <div class="socials">
-                    <a href="https://www.tiktok.com/@the.else.company?_r=1&_t=ZP-9AlocrACvTK">TikTok</a>
-                    <a href="https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Felse.company%3Fvrfl%3DMTg4cHRodXlkbzNmZg%253D%253D%26utm_source%3Dqr&is_from_rle">Instagram</a>
-                    <a href="https://www.linkedin.com/company/elsecompany/?viewAsMember=true">LinkedIn</a>
-                </div>
+<!-- Hero: giant logo, then "who we are" -->
+<header class="hero" id="hero">
+    <span id="top"></span>
+    <div class="hero-panel photo">
+        <div class="hero-slides" id="hero-slides" aria-hidden="true"></div>
+        <p class="hero-tagline"><span>Curated</span><span>AI</span><span>Fashion</span></p>
+        <div class="hero-content">
+            <div>
+                <h1 class="serif-title">who we are</h1>
+                <p>ELSE is a new approach to fashion, combining secondhand shopping with artificial intelligence to create a more personal and intuitive experience. We believe that great fashion doesn't always have to be new, and that technology can help us discover the value of what already exists.</p>
             </div>
         </div>
     </div>
+</header>
 
-    <div class="tagline-wrap">
-        <div class="footer-text reveal d2" data-i18n="tagline">
-            Else is the AI-native marketplace for secondhand fashion, designed to feel as good as buying new.
+<main>
+    <!-- What drives us -->
+    <section class="split drives screen" data-section="what_drives_us">
+        <div class="reveal">
+            <h2 class="serif-title">what drives us</h2>
+            <p>Our work is guided by the belief that fashion and technology can create a better shopping experience. We value innovation because we see it as a way to challenge traditional shopping habits and explore new possibilities. We believe in personalisation, understanding that everyone's style, needs and preferences are different. We also value conscious consumption, encouraging people to discover and give new life to existing garments instead of always looking for something new. Above all, we want to make technology useful, accessible and human, creating an experience that genuinely makes people's lives easier.</p>
+        </div>
+        <div class="drives-photos reveal">
+            <img class="rounded" src="img/web/drives-1.jpg" alt="Gold necklaces on a soft blue top" loading="lazy">
+            <img class="rounded" src="img/web/drives-2.jpg" alt="Blue fabric with sequins" loading="lazy">
+        </div>
+    </section>
+
+    <!-- Word strip + More than clothes -->
+    <section class="screen screen-center" data-section="more_than_clothes">
+    <div class="strip" aria-label="Curated tech fashion. Time to wear something else.">
+        <div class="strip-row reveal" aria-hidden="true">
+            <span>Curated</span><span>Tech</span><span>Fashion</span>
+        </div>
+        <div class="strip-row reveal" aria-hidden="true">
+            <span>Time</span><span>to</span><span>wear</span><span>something</span><span>else</span>
         </div>
     </div>
 
-    <div class="newsletter-panel" id="newsletter-panel" inert>
-        <form class="newsletter-form" id="newsletter-form" novalidate>
-            <div class="newsletter-row">
-                <label for="newsletter-email" class="visually-hidden" data-i18n="emailLabel">Email address</label>
-                <input type="email" id="newsletter-email" name="email" data-i18n-placeholder="emailPlaceholder"
-                       placeholder="email" autocomplete="email" required>
-                <button type="submit" class="newsletter-submit" id="newsletter-submit">
-                    <span class="spinner" id="newsletter-spinner" aria-hidden="true" hidden></span>
-                    <span id="newsletter-submit-label">Subscribe</span>
-                </button>
+    <div class="more">
+        <div class="more-card rounded reveal">
+            <img src="img/web/more.jpg" alt="Woman in a white top" loading="lazy">
+            <div class="more-inner">
+                <div class="more-tags" aria-hidden="true"><span>Your</span><span>AI</span><span>Style</span></div>
+                <h2>More than clothes</h2>
+                <p>Powered by our own AI</p>
             </div>
+        </div>
+    </div>
+    </section>
 
-            <label class="consent">
-                <input type="checkbox" id="newsletter-consent" name="consent" value="yes" required>
-                <span id="consent-text" data-i18n="consent">
-                    I'm 16 or older and I agree to receive emails from The Else Company
-                    about our launch, news and offers. I can unsubscribe at any time.
-                </span>
+    <!-- Our nature -->
+    <section class="split nature screen" data-section="our_nature">
+        <div class="reveal">
+            <h2 class="serif-title">our nature</h2>
+            <p>Artificial intelligence is one of the foundations of ELSE, shaping the way the platform is developed and how users experience fashion. Rather than simply adding AI as an extra feature, we've built the experience around its possibilities, using technology to make secondhand shopping more intuitive, accessible and personal.</p>
+            <p>At the centre of this experience is your own personal AI assistant, designed to understand your preferences, adapt to your needs and help you throughout your journey. You can interact with it naturally, ask questions, search for specific products, discover new styles, get recommendations or find inspiration. Instead of spending time browsing through endless options, you can simply explain what you're looking for and let your assistant guide you towards relevant discoveries.</p>
+        </div>
+        <img class="nature-photo rounded reveal" src="img/web/nature.jpg" alt="Soft white petals" loading="lazy">
+        <div class="ask-row reveal">
+            <button class="ask-pill" id="ask-else" type="button" aria-label="Hi! I'm else, ask me anything">
+                <img src="img/logo-mark-blue.png" alt="">
+                <span class="ask-text" aria-hidden="true"><span id="ask-typed"></span><span class="ask-cursor"></span></span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Our brands -->
+    <section class="brands screen screen-center" id="our-brands" data-section="our_brands">
+        <h2 class="serif-title reveal">our brands</h2>
+        <p class="brands-intro reveal">We select the perfect brands for our users, taking care of quality and style, always with the contemporary touch that defines our brand. In our selection, you can find your style without sacrificing premium quality.</p>
+        <div class="brand-cards">
+            <article class="brand-card reveal">
+                <h3>discover</h3>
+                <p class="kicker">Find what feels like you</p>
+                <p>Discover a new way to explore fashion. From unique pieces to brands you love, ELSE helps you find items that match your taste, interests and personal style.</p>
+            </article>
+            <article class="brand-card reveal">
+                <h3>connect</h3>
+                <p class="kicker">AI to find your style</p>
+                <p>Your personal AI assistant learns from your preferences, understands what you are looking for and helps you navigate a world of fashion that feels more personal. Less searching, more meaningful discoveries.</p>
+            </article>
+            <article class="brand-card reveal">
+                <h3>rediscover</h3>
+                <p class="kicker">Give fashion another life</p>
+                <p>Every pre-loved piece has a story worth continuing. ELSE connects great fashion with new owners, giving garments another opportunity to be worn, loved and appreciated.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- Future -->
+    <section class="future screen screen-center" data-section="future">
+        <div class="future-text reveal">
+            <h2 class="serif-title">future</h2>
+            <p>Our vision for the future is to make secondhand fashion the first choice for a new generation of consumers. We want to continue developing ELSE by exploring new possibilities with artificial intelligence, creating an increasingly personalised experience that understands each user's style, preferences and needs.</p>
+            <p>We aim to expand the possibilities of our personal AI assistant, making it a tool that goes beyond shopping and helps users with everything related to fashion, from discovering new brands and styles to finding inspiration and making more conscious choices. Our goal is to build a smarter, more connected fashion experience that makes secondhand shopping easier and more accessible for everyone.</p>
+        </div>
+        <img class="future-banner rounded reveal" src="img/web/future.jpg" alt="Blue sequin embroidery" loading="lazy">
+    </section>
+
+    <!-- Word strip 2 + closing line -->
+    <section class="screen screen-center" data-section="closing">
+    <div class="strip" aria-label="Everything we picked with care. Something else is waiting for you.">
+        <div class="strip-row reveal" aria-hidden="true">
+            <span>Everything</span><span>we</span><span>picked</span><span>with</span><span>care</span>
+        </div>
+        <div class="strip-row reveal" aria-hidden="true">
+            <span>Something</span><span>else</span><span>is</span><span>waiting</span><span>for</span><span>you</span>
+        </div>
+    </div>
+
+    <p class="closing reveal">Pre-loved pieces from <br>the brands you love, <br>picked for <em>you&nbsp;by&nbsp;AI.</em></p>
+    </section>
+</main>
+
+<footer class="footer" data-section="footer">
+    <div class="footer-cta">
+        <p class="kicker">Want to know more?</p>
+        <div class="waitlist-slot" id="waitlist-slot" aria-hidden="true"></div>
+        <p class="note">Be the first one to access the app and discover something second new.</p>
+    </div>
+    <div class="footer-mark" aria-hidden="true">
+        <img src="img/web/logo-mark-white.png" alt="">
+    </div>
+    <div class="footer-row">
+        <span><a href="legal.html">Legal notice</a> / <a href="app-terms.html">Terms and conditions</a> / <a href="privacy.html">Privacy</a></span>
+        <span>©2026 The Else Company</span>
+        <span class="follow">Follow us at<br><a href="https://www.instagram.com/else.company/" target="_blank" rel="noopener">@theelsecompany</a></span>
+    </div>
+</footer>
+
+<!-- Early access popup -->
+<div class="modal" id="early-modal" role="dialog" aria-modal="true" aria-labelledby="early-title" aria-hidden="true">
+    <div class="modal-card">
+        <button class="modal-close" type="button" aria-label="Close">&times;</button>
+        <div class="modal-ask">
+            <img src="img/logo-mark-blue.png" alt="">
+            <p class="modal-title">Your personal AI stylist is on its way</p>
+            <p>We're building an assistant that learns your style and finds the pieces that feel like you. Join the waitlist and be the first to meet it.</p>
+            <button class="modal-submit" type="button" id="ask-continue">Join the waitlist</button>
+        </div>
+        <form class="modal-form" id="early-form" novalidate>
+            <label class="modal-title" id="early-title" for="early-email">Enter your email</label>
+            <input class="modal-input" id="early-email" name="email" type="email" autocomplete="email" placeholder="you@email.com" required>
+            <label class="modal-consent">
+                <input type="checkbox" id="early-consent" name="consent" required>
+                <span>I am 16 or older and agree to receive emails from The Else Company about launches, news and offers. I can unsubscribe at any time. See our <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a>.</span>
             </label>
-
-            <div class="honeypot" aria-hidden="true">
-                <label for="newsletter-website">Leave this field empty</label>
-                <input type="text" id="newsletter-website" name="website" tabindex="-1" autocomplete="off">
-            </div>
-
-            <p class="newsletter-status" id="newsletter-status" role="status" aria-live="polite"></p>
+            <button class="modal-submit" type="submit"><span class="spinner" aria-hidden="true"></span><span class="submit-label">Sign me up</span></button>
+            <p class="modal-error" id="early-error" role="alert"></p>
         </form>
-
-        <div class="newsletter-success" id="newsletter-success" role="status" aria-live="polite" hidden>
-            <svg class="success-icon" viewBox="0 0 48 48" aria-hidden="true">
-                <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M15 24.5l6 6 12-13" fill="none" stroke="currentColor" stroke-width="2.5"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <p class="success-title" id="success-title"></p>
-            <p class="success-text" id="success-text"></p>
+        <div class="modal-done">
+            <img class="done-mark" src="img/logo-mark-blue.png" alt="">
+            <p class="modal-title" id="done-title" style="margin-bottom:0">You're on the list</p>
+            <p id="done-text">We'll let you know as soon as early access opens.</p>
         </div>
-    </div>
-</div>
-
-<div class="footer">
-    <div class="cta-row">
-        <p class="newsletter-legal reveal d2" id="newsletter-legal" data-i18n-html="newsletterLegal" hidden>
-            We'll use your email only to send you these updates, based on your consent, and we never sell it.
-            Every email includes an unsubscribe link. See our <a href="privacy.html">Privacy policy</a>
-            to learn how to access or delete your data.
-        </p>
-
-        <button class="glass-btn about-btn reveal d3" id="about-btn" type="button" data-i18n="about">About us</button>
-        <button class="glass-btn newsletter-btn reveal d4" id="newsletter-btn" type="button"
-                aria-expanded="false" aria-controls="newsletter-panel" data-i18n="earlyAccess">Early access
-        </button>
-
-        <button class="glass-btn about-back reveal d3" id="back-btn" type="button" data-i18n="back" hidden>Back</button>
-        <button class="glass-btn newsletter-back reveal d3" id="newsletter-back" type="button" data-i18n="back" hidden>
-            Back
-        </button>
-    </div>
-
-    <div class="legal">
-        <div class="legal-line">©2026 The Else Company</div>
-        <div class="legal-line legal-links">
-            <a href="legal.html" data-i18n="legalNotice">Legal notice</a> ·
-            <a href="privacy.html" data-i18n="privacyShort" data-i18n-href="privacyUrl">Privacy</a>
-        </div>
-        <!-- Language switcher (disabled). To re-enable: uncomment the line below and the JS blocks marked "Language switcher" -->
-        <!-- <nav class="lang-switch" id="lang-switch" aria-label="Language"></nav> -->
     </div>
 </div>
 
 <script>
-    const ELSE_LINK = '<a href="mailto:else@elsecompany.com">else@elsecompany.com</a>';
+    // Hero photos: start on a random one, then change every few seconds.
+    // To use the final photos, edit this list.
+    (function () {
+        const HERO_PHOTOS = [2, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => 'img/web/hero-' + n + '.jpg');
+        const INTERVAL = 6500;   // ms each photo stays on screen
 
-    const LANGUAGE_NAMES = {
-        en: 'English',
-        es: 'Español',
-        fr: 'Français',
-        de: 'Deutsch',
-        it: 'Italiano',
-        pt: 'Português',
-    };
-
-    const TRANSLATIONS = {
-        en: {
-            metaDescription: 'The Else Company: curated secondhand fashion with a firsthand feeling. Coming soon.',
-            tagline: 'Else is the AI-native marketplace for secondhand fashion, designed to feel as good as buying new.',
-            about: 'About us',
-            comingSoon: 'Coming soon',
-            contactIntro: `Reach out to ${ELSE_LINK} for general and press inquiries, and follow us along at the links below.`,
-            back: 'Back',
-            earlyAccess: 'Early access',
-            emailLabel: 'Email address',
-            emailPlaceholder: 'email',
-            subscribe: 'Subscribe',
-            subscribing: 'Sending…',
-            consent: "I'm 16 or older and I agree to receive emails from The Else Company about our launch, news and offers. I can unsubscribe at any time.",
-            newsletterLegal: 'We\'ll use your email only to send you these updates, based on your consent, and we never sell it. Every email includes an unsubscribe link. See our <a href="privacy.html">Privacy policy</a> to learn how to access or delete your data.',
-            invalidEmail: 'Please enter a valid email address.',
-            consentRequired: 'Please tick the box to agree to get early access.',
-            signupsSoon: 'Signups open very soon. Thanks for your interest!',
-            signupError: 'Something went wrong. Please try again later.',
-            alreadyTitle: "You're already subscribed",
-            alreadyText: email => `${email} is already on our list. We'll let you know when Else launches.`,
-            successTitle: "You're subscribed!",
-            successText: email => `Thanks for joining. We'll email you at ${email} when Else launches.`,
-            legalNotice: 'Legal notice',
-            privacyUrl: 'privacy.html',
-            privacyPolicy: 'Privacy policy',
-            privacyShort: 'Privacy',
-            languageLabel: 'Language',
-        },
-        es: {
-            metaDescription: 'The Else Company: moda de segunda mano seleccionada, con la sensación de estrenar. Próximamente.',
-            tagline: 'Else es el marketplace de moda de segunda mano nativo de IA, pensado para que comprar sea tan especial como estrenar.',
-            about: 'Sobre nosotros',
-            comingSoon: 'Próximamente',
-            contactIntro: `Escribe a ${ELSE_LINK} para consultas generales y de prensa, y síguenos en los enlaces de abajo.`,
-            back: 'Volver',
-            earlyAccess: 'Acceso anticipado',
-            emailLabel: 'Correo electrónico',
-            emailPlaceholder: 'email',
-            subscribe: 'Apuntarme',
-            subscribing: 'Enviando…',
-            consent: 'Tengo 16 años o más y acepto recibir emails de The Else Company sobre el lanzamiento, novedades y ofertas. Puedo darme de baja cuando quiera.',
-            newsletterLegal: 'Solo usaremos tu email para enviarte estas novedades, con tu consentimiento, y nunca lo venderemos. Todos los emails incluyen un enlace para darte de baja. Consulta nuestra <a href="privacy-es.html">Política de privacidad</a> para saber cómo acceder a tus datos o eliminarlos.',
-            invalidEmail: 'Introduce un email válido.',
-            consentRequired: 'Marca la casilla para aceptar y obtener acceso anticipado.',
-            signupsSoon: 'Las inscripciones abren muy pronto. ¡Gracias por tu interés!',
-            signupError: 'Algo ha fallado. Inténtalo de nuevo más tarde.',
-            alreadyTitle: 'Ya estabas en la lista',
-            alreadyText: email => `${email} ya está en nuestra lista. Te avisaremos cuando Else se lance.`,
-            successTitle: '¡Ya estás dentro!',
-            successText: email => `Gracias por unirte. Te escribiremos a ${email} cuando lancemos Else.`,
-            legalNotice: 'Aviso legal',
-            privacyUrl: 'privacy-es.html',
-            privacyPolicy: 'Política de privacidad',
-            privacyShort: 'Privacidad',
-            languageLabel: 'Idioma',
-        },
-        fr: {
-            metaDescription: 'The Else Company : la mode de seconde main sélectionnée, avec la sensation du neuf. Bientôt disponible.',
-            tagline: "Else est la marketplace de mode de seconde main native IA, pensée pour offrir le même plaisir qu'un achat neuf.",
-            about: 'À propos',
-            comingSoon: 'Bientôt disponible',
-            contactIntro: `Écrivez à ${ELSE_LINK} pour toute demande générale ou presse, et suivez-nous via les liens ci-dessous.`,
-            back: 'Retour',
-            earlyAccess: 'Accès anticipé',
-            emailLabel: 'Adresse e-mail',
-            emailPlaceholder: 'e-mail',
-            subscribe: "S'inscrire",
-            subscribing: 'Envoi…',
-            consent: "J'ai 16 ans ou plus et j'accepte de recevoir des e-mails de The Else Company sur notre lancement, nos actualités et nos offres. Je peux me désinscrire à tout moment.",
-            newsletterLegal: 'Nous utiliserons votre e-mail uniquement pour vous envoyer ces informations, sur la base de votre consentement, et nous ne le vendrons jamais. Chaque e-mail contient un lien de désinscription. Consultez notre <a href="privacy-fr.html">Politique de confidentialité</a> pour savoir comment accéder à vos données ou les supprimer.',
-            invalidEmail: 'Veuillez saisir une adresse e-mail valide.',
-            consentRequired: "Veuillez cocher la case pour obtenir l'accès anticipé.",
-            signupsSoon: 'Les inscriptions ouvrent très bientôt. Merci de votre intérêt !',
-            signupError: "Une erreur s'est produite. Veuillez réessayer plus tard.",
-            alreadyTitle: 'Vous êtes déjà sur la liste',
-            alreadyText: email => `${email} est déjà sur notre liste. Nous vous préviendrons au lancement d'Else.`,
-            successTitle: 'Inscription confirmée !',
-            successText: email => `Merci de nous avoir rejoints. Nous vous écrirons à ${email} au lancement d'Else.`,
-            legalNotice: 'Mentions légales',
-            privacyUrl: 'privacy-fr.html',
-            privacyPolicy: 'Politique de confidentialité',
-            privacyShort: 'Confidentialité',
-            languageLabel: 'Langue',
-        },
-        de: {
-            metaDescription: 'The Else Company: kuratierte Secondhand-Mode, die sich wie neu anfühlt. Demnächst.',
-            tagline: 'Else ist der KI-native Marktplatz für Secondhand-Mode, der sich so gut anfühlt wie ein Neukauf.',
-            about: 'Über uns',
-            comingSoon: 'Demnächst',
-            contactIntro: `Schreib an ${ELSE_LINK} für allgemeine Anfragen und Presseanfragen und folge uns über die Links unten.`,
-            back: 'Zurück',
-            earlyAccess: 'Früher Zugang',
-            emailLabel: 'E-Mail-Adresse',
-            emailPlaceholder: 'E-Mail',
-            subscribe: 'Anmelden',
-            subscribing: 'Senden…',
-            consent: 'Ich bin mindestens 16 Jahre alt und möchte E-Mails von The Else Company zu unserem Launch, Neuigkeiten und Angeboten erhalten. Ich kann mich jederzeit abmelden.',
-            newsletterLegal: 'Wir verwenden deine E-Mail-Adresse nur, um dir diese Updates auf Grundlage deiner Einwilligung zu senden, und verkaufen sie niemals. Jede E-Mail enthält einen Abmeldelink. In unserer <a href="privacy-de.html">Datenschutzerklärung</a> erfährst du, wie du deine Daten einsehen oder löschen kannst.',
-            invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
-            consentRequired: 'Bitte setze das Häkchen, um frühen Zugang zu erhalten.',
-            signupsSoon: 'Die Anmeldung öffnet in Kürze. Danke für dein Interesse!',
-            signupError: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
-            alreadyTitle: 'Du bist schon dabei',
-            alreadyText: email => `${email} steht bereits auf unserer Liste. Wir melden uns, sobald Else startet.`,
-            successTitle: 'Du bist dabei!',
-            successText: email => `Danke fürs Mitmachen. Wir schreiben dir an ${email}, sobald Else startet.`,
-            legalNotice: 'Impressum',
-            privacyUrl: 'privacy-de.html',
-            privacyPolicy: 'Datenschutz',
-            privacyShort: 'Datenschutz',
-            languageLabel: 'Sprache',
-        },
-        it: {
-            metaDescription: 'The Else Company: moda second hand selezionata, con la sensazione del nuovo. Prossimamente.',
-            tagline: 'Else è il marketplace di moda second hand nativo AI, pensato per regalare la stessa sensazione di un acquisto nuovo.',
-            about: 'Chi siamo',
-            comingSoon: 'Prossimamente',
-            contactIntro: `Scrivi a ${ELSE_LINK} per informazioni generali e richieste stampa, e seguici tramite i link qui sotto.`,
-            back: 'Indietro',
-            earlyAccess: 'Accesso anticipato',
-            emailLabel: 'Indirizzo email',
-            emailPlaceholder: 'email',
-            subscribe: 'Iscriviti',
-            subscribing: 'Invio…',
-            consent: "Ho almeno 16 anni e accetto di ricevere email da The Else Company su lancio, novità e offerte. Posso annullare l'iscrizione in qualsiasi momento.",
-            newsletterLegal: 'Useremo la tua email solo per inviarti questi aggiornamenti, sulla base del tuo consenso, e non la venderemo mai. Ogni email include un link per annullare l\'iscrizione. Consulta la nostra <a href="privacy-it.html">Informativa sulla privacy</a> per sapere come accedere ai tuoi dati o cancellarli.',
-            invalidEmail: 'Inserisci un indirizzo email valido.',
-            consentRequired: "Spunta la casella per ottenere l'accesso anticipato.",
-            signupsSoon: "Le iscrizioni apriranno a breve. Grazie per l'interesse!",
-            signupError: 'Qualcosa è andato storto. Riprova più tardi.',
-            alreadyTitle: 'Sei già nella lista',
-            alreadyText: email => `${email} è già nella nostra lista. Ti avviseremo al lancio di Else.`,
-            successTitle: 'Iscrizione completata!',
-            successText: email => `Grazie per l'iscrizione. Ti scriveremo a ${email} al lancio di Else.`,
-            legalNotice: 'Note legali',
-            privacyUrl: 'privacy-it.html',
-            privacyPolicy: 'Informativa sulla privacy',
-            privacyShort: 'Privacy',
-            languageLabel: 'Lingua',
-        },
-        pt: {
-            metaDescription: 'The Else Company: moda de segunda mão selecionada, com sensação de novo. Em breve.',
-            tagline: 'A Else é o marketplace de moda de segunda mão nativo de IA, pensado para ser tão bom quanto comprar novo.',
-            about: 'Sobre nós',
-            comingSoon: 'Em breve',
-            contactIntro: `Escreva para ${ELSE_LINK} para dúvidas gerais e de imprensa, e siga-nos nos links abaixo.`,
-            back: 'Voltar',
-            earlyAccess: 'Acesso antecipado',
-            emailLabel: 'Endereço de e-mail',
-            emailPlaceholder: 'e-mail',
-            subscribe: 'Inscrever-me',
-            subscribing: 'Enviando…',
-            consent: 'Tenho 16 anos ou mais e aceito receber e-mails da The Else Company sobre o lançamento, novidades e ofertas. Posso cancelar a inscrição a qualquer momento.',
-            newsletterLegal: 'Usaremos seu e-mail apenas para enviar essas novidades, com base no seu consentimento, e nunca o venderemos. Todos os e-mails incluem um link para cancelar a inscrição. Consulte nossa <a href="privacy-pt.html">Política de privacidade</a> para saber como acessar ou excluir seus dados.',
-            invalidEmail: 'Digite um e-mail válido.',
-            consentRequired: 'Marque a caixa para obter acesso antecipado.',
-            signupsSoon: 'As inscrições abrem em breve. Obrigado pelo interesse!',
-            signupError: 'Algo deu errado. Tente novamente mais tarde.',
-            alreadyTitle: 'Você já está na lista',
-            alreadyText: email => `${email} já está na nossa lista. Avisaremos quando a Else for lançada.`,
-            successTitle: 'Inscrição feita!',
-            successText: email => `Obrigado por se juntar. Vamos escrever para ${email} quando a Else for lançada.`,
-            legalNotice: 'Aviso legal',
-            privacyUrl: 'privacy-pt.html',
-            privacyPolicy: 'Política de privacidade',
-            privacyShort: 'Privacidade',
-            languageLabel: 'Idioma',
-        },
-    };
-
-    const DEFAULT_LANGUAGE = 'en';
-    const LANGUAGE_STORAGE_KEY = 'else-language';
-
-    const TIMEZONE_LANGUAGES = {
-        'Europe/Madrid': 'es', 'Atlantic/Canary': 'es', 'Africa/Ceuta': 'es',
-        'America/Mexico_City': 'es', 'America/Bogota': 'es', 'America/Lima': 'es',
-        'America/Santiago': 'es', 'America/Caracas': 'es', 'America/Montevideo': 'es',
-        'America/Guatemala': 'es', 'America/Costa_Rica': 'es', 'America/Panama': 'es',
-        'America/Guayaquil': 'es', 'America/La_Paz': 'es', 'America/Asuncion': 'es',
-        'America/Santo_Domingo': 'es', 'America/El_Salvador': 'es', 'America/Tegucigalpa': 'es',
-        'America/Managua': 'es', 'America/Havana': 'es',
-        'Europe/Paris': 'fr', 'Europe/Monaco': 'fr', 'Europe/Luxembourg': 'fr',
-        'Europe/Berlin': 'de', 'Europe/Vienna': 'de', 'Europe/Zurich': 'de', 'Europe/Busingen': 'de',
-        'Europe/Rome': 'it', 'Europe/San_Marino': 'it', 'Europe/Vatican': 'it',
-        'Europe/Lisbon': 'pt', 'Atlantic/Madeira': 'pt', 'Atlantic/Azores': 'pt',
-        'America/Sao_Paulo': 'pt', 'America/Bahia': 'pt', 'America/Fortaleza': 'pt',
-        'America/Recife': 'pt', 'America/Manaus': 'pt', 'America/Belem': 'pt',
-    };
-
-    function readSavedLanguage() {
-        try {
-            return localStorage.getItem(LANGUAGE_STORAGE_KEY);
-        } catch {
-            return null;
-        }
-    }
-
-    function saveLanguage(lang) {
-        try {
-            localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-        } catch {
-        }
-    }
-
-    function detectLanguage() {
-        const fromUrl = new URLSearchParams(location.search).get('lang');
-        if (fromUrl && TRANSLATIONS[fromUrl]) return fromUrl;
-        const saved = readSavedLanguage();
-        if (saved && TRANSLATIONS[saved]) return saved;
-        for (const tag of navigator.languages || [navigator.language]) {
-            const base = (tag || '').toLowerCase().split('-')[0];
-            if (TRANSLATIONS[base]) return base;
-        }
-        let timezone = '';
-        try {
-            timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-        } catch {
-        }
-        if (TIMEZONE_LANGUAGES[timezone]) return TIMEZONE_LANGUAGES[timezone];
-        if (timezone.startsWith('America/Argentina/')) return 'es';
-        return DEFAULT_LANGUAGE;
-    }
-
-    let currentLanguage = detectLanguage();
-
-    function t(key) {
-        return TRANSLATIONS[currentLanguage][key] ?? TRANSLATIONS[DEFAULT_LANGUAGE][key];
-    }
-
-    let lastSignup = null;
-
-    function applyLanguage(lang) {
-        currentLanguage = lang;
-        document.documentElement.lang = lang;
-        document.getElementById('meta-description').setAttribute('content', t('metaDescription'));
-
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            el.textContent = t(el.dataset.i18n);
+        const box = document.getElementById('hero-slides');
+        const slides = HERO_PHOTOS.map((src) => {
+            const el = document.createElement('div');
+            el.className = 'hero-slide';
+            el.style.backgroundImage = 'url("' + src + '")';
+            box.appendChild(el);
+            return el;
         });
-        document.querySelectorAll('[data-i18n-html]').forEach(el => {
-            el.innerHTML = t(el.dataset.i18nHtml);
+        if (!slides.length) return;
+
+        let current = Math.floor(Math.random() * slides.length);
+        slides[current].classList.add('active');
+        if (slides.length < 2) return;
+
+        // Preload the rest so the crossfade never shows a gap
+        HERO_PHOTOS.forEach((src) => { const i = new Image(); i.src = src; });
+
+        const hero = document.getElementById('hero');
+        setInterval(() => {
+            // Don't change while the photo is off screen or the tab is hidden
+            if (document.hidden || hero.getBoundingClientRect().bottom <= 0) return;
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, INTERVAL);
+    })();
+
+    // Slow, eased scroll used by the buttons and the logo
+    window.smoothScrollTo = (function () {
+        let frame = null;
+        const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        function cancel() { if (frame) { cancelAnimationFrame(frame); frame = null; } }
+        ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, cancel, { passive: true }));
+
+        return function (target, duration) {
+            cancel();
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const start = window.scrollY;
+            const dist = target - start;
+            if (reduce || Math.abs(dist) < 2) { window.scrollTo(0, target); return; }
+            duration = duration || Math.min(2600, 1400 + Math.abs(dist) * 0.25);
+            const t0 = performance.now();
+            function step(now) {
+                const t = Math.min(1, (now - t0) / duration);
+                window.scrollTo(0, start + dist * ease(t));
+                frame = t < 1 ? requestAnimationFrame(step) : null;
+            }
+            frame = requestAnimationFrame(step);
+        };
+    })();
+
+    // Hero: turn scroll position into --p (logo) and --q ("who we are")
+    (function () {
+        const hero = document.getElementById('hero');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const clamp = (v) => Math.min(1, Math.max(0, v));
+        let ticking = false;
+
+        function update() {
+            ticking = false;
+            const range = hero.offsetHeight - window.innerHeight;
+            const raw = range > 0 ? -hero.getBoundingClientRect().top / range : 1;
+            const p = clamp(raw / 0.55);
+            const q = clamp((raw - 0.3) / 0.5);
+            if (q > 0.9 && window.elseStats) window.elseStats.section('who_we_are');
+            const g = clamp((p - 0.75) / 0.25);
+            const root = document.documentElement;
+            root.style.setProperty('--p', reduce ? Math.round(p) : p);
+            root.style.setProperty('--q', reduce ? Math.round(q) : q);
+            root.style.setProperty('--g', reduce ? Math.round(g) : g);
+            // Once the photo has scrolled out from under the bar, switch to the light look
+            const bar = document.querySelector('.glass-bar').offsetHeight;
+            const heroBottom = hero.getBoundingClientRect().bottom;
+            root.classList.toggle('on-light', heroBottom < bar / 2);
+            // --l: 0 → 1 over the first stretch of the white part (nav rearranges)
+            let l = clamp((bar / 2 + 140 - heroBottom) / 140);
+            if (reduce) l = Math.round(l);
+            root.style.setProperty('--l', l);
+            root.classList.toggle('nav-light', l > 0.5);
+            root.classList.toggle('nav-scrolled', p > 0.9);
+
+            // End of the page: --f goes 0 → 1 while the footer scrolls in
+            const vh = window.innerHeight;
+            const maxScroll = document.documentElement.scrollHeight - vh;
+            const startAt = Math.max(0, Math.min(footer.offsetTop - vh * 0.9, maxScroll - vh * 0.5));
+            let f = clamp((window.scrollY - startAt) / Math.max(1, maxScroll - startAt));
+            f = f * f * (3 - 2 * f);   // smoothstep
+            if (reduce) f = Math.round(f);
+            root.style.setProperty('--f', f);
+            // Final spot: the empty slot in the footer, under "Want to know more?"
+            const slotRect = slot.getBoundingClientRect();
+            const ty = slotRect.top + slotRect.height / 2;
+            root.style.setProperty('--ty', ty + 'px');
+            // White "Join the waitlist" look once the button is over the blue footer
+            const barY = bar / 2;
+            const y = barY + (ty - barY) * f;
+            root.classList.toggle('cta-final', f > 0.5 && y > footer.getBoundingClientRect().top + 10);
+        }
+        const footer = document.querySelector('.footer');
+        const slot = document.getElementById('waitlist-slot');
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+    })();
+
+    // Nav buttons: work out where each one starts (bottom) and ends (top bar)
+    (function () {
+        const root = document.documentElement;
+        const hero = document.getElementById('hero');
+        const about = document.getElementById('nav-about');
+        const early = document.getElementById('nav-early');
+        const why = document.getElementById('nav-why');
+        const EARLY_SCALE = 1.25;   // Early access is bigger on the first screen
+
+        function layout() {
+            const vw = root.clientWidth;
+            const gutter = parseFloat(getComputedStyle(document.querySelector('.drives')).paddingLeft) || 20;
+            const gap = 10;
+            const wA = about.offsetWidth, wE = early.offsetWidth, wW = why.offsetWidth;
+            const mobile = vw <= 760;
+
+            root.style.setProperty('--vh', window.innerHeight + 'px');
+
+            about.style.setProperty('--x0', gutter + 'px');
+            about.style.setProperty('--x1', gutter + 'px');
+
+            why.style.setProperty('--x0', (vw - gutter - wW) + 'px');
+
+            early.style.setProperty('--s0', EARLY_SCALE);
+            early.style.setProperty('--x0', ((vw - wE) / 2) + 'px');
+
+            // Top bar: Early access on the left, Why else on the right
+            early.style.setProperty('--x1', gutter + 'px');
+            why.style.setProperty('--x1', (vw - gutter - wW) + 'px');
+
+            // Final size and spot in the footer: the slot gets the size of the scaled button
+            const slot = document.getElementById('waitlist-slot');
+            const target = mobile ? Math.min(vw * 0.82, 360) : Math.max(240, Math.min(vw * 0.22, 340));
+            const sF = target / wE;
+            early.style.setProperty('--sF', sF);
+            slot.style.width = target + 'px';
+            slot.style.height = (early.offsetHeight * sF) + 'px';
+            const sr = slot.getBoundingClientRect();
+            early.style.setProperty('--xF', (sr.left + sr.width / 2 - wE / 2) + 'px');
+
+            root.classList.add('nav-ready');
+            window.dispatchEvent(new Event('scroll'));
+        }
+
+        // About us → "who we are" (end of the first scroll)
+        about.addEventListener('click', () => {
+            window.smoothScrollTo(hero.offsetTop + hero.offsetHeight - window.innerHeight);
         });
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-            el.placeholder = t(el.dataset.i18nPlaceholder);
+        // Logo → back to the top
+        document.querySelector('.hero-logo').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.smoothScrollTo(0);
         });
-        document.querySelectorAll('[data-i18n-href]').forEach(el => {
-            el.setAttribute('href', t(el.dataset.i18nHref));
+        // Why else → our brands
+        why.addEventListener('click', () => {
+            const brands = document.getElementById('our-brands');
+            window.smoothScrollTo(brands.getBoundingClientRect().top + window.scrollY);
         });
 
-        newsletterSubmitLabel.textContent = isSending ? t('subscribing') : t('subscribe');
-        newsletterStatus.textContent = '';
-        if (lastSignup) renderSignupSuccess();
+        window.addEventListener('resize', layout);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+        layout();
+    })();
 
-        // Language switcher
-        if (languageSwitch) {
-            languageSwitch.setAttribute('aria-label', t('languageLabel'));
-            languageSwitch.querySelectorAll('button').forEach(button => {
-                button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
-            });
+    // "Hi! I'm else" pill: types itself out the first time it comes into view
+    (function () {
+        const TEXT = "Hi! I'm else, ask me anything";
+        const out = document.getElementById('ask-typed');
+        const pill = document.getElementById('ask-else');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || !('IntersectionObserver' in window)) { out.textContent = TEXT; return; }
+        const io = new IntersectionObserver((entries) => {
+            if (!entries[0].isIntersecting) return;
+            io.disconnect();
+            let i = 0;
+            setTimeout(function type() {
+                out.textContent = TEXT.slice(0, ++i);
+                if (i < TEXT.length) setTimeout(type, 45 + Math.random() * 50);
+            }, 400);
+        }, { threshold: 0.6 });
+        io.observe(pill);
+    })();
+
+    // Anonymous stats + signups → Google Sheet (Apps Script web app)
+    // No cookies, no IP, nothing stored in the browser. Visits are not counted when the
+    // browser asks not to be tracked (Do Not Track / GPC).
+    window.elseStats = (function () {
+        const API = 'https://script.google.com/macros/s/AKfycbzZ4DXSE1MHEBm0YE2ja69Lr7MSzBOmjRJs6lUyJSHpe6pwrZc6FRbVRC4Y0FPeDphN/exec';
+        const local = location.protocol === 'file:' || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+        const optedOut = navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true;
+        // Visits from your Mac (file or localhost) are counted too, saved as "web v2 (test)",
+        // so you can try the stats before the web is online. ?track does the same on any address.
+        const testing = local || /[?&]track\b/.test(location.search);
+        const TRACK = testing || !optedOut;
+        const SITE = testing ? 'web v2 (test)' : 'web v2';
+
+        const visitId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+
+        function detectOs(ua) {
+            if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'iOS';
+            if (/Android/.test(ua)) return 'Android';
+            if (/Windows/.test(ua)) return 'Windows';
+            if (/Mac OS X|Macintosh/.test(ua)) return 'macOS';
+            if (/Linux/.test(ua)) return 'Linux';
+            return 'Other';
         }
-    }
 
-    // Language switcher
-    const languageSwitch = document.getElementById('lang-switch');
-    if (languageSwitch) {
-        Object.keys(TRANSLATIONS).forEach(lang => {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.dataset.lang = lang;
-            button.lang = lang;
-            button.textContent = lang.toUpperCase();
-            button.title = LANGUAGE_NAMES[lang];
-            button.setAttribute('aria-label', LANGUAGE_NAMES[lang]);
-            button.addEventListener('click', () => {
-                saveLanguage(lang);
-                applyLanguage(lang);
-            });
-            languageSwitch.appendChild(button);
-        });
-    }
-
-    const aboutButton = document.getElementById('about-btn');
-    const backButton = document.getElementById('back-btn');
-    const homeView = document.getElementById('home-view');
-    const aboutView = document.getElementById('about-view');
-    const footerText = document.querySelector('.footer-text');
-    const newsletterButton = document.getElementById('newsletter-btn');
-    const newsletterBack = document.getElementById('newsletter-back');
-    const newsletterPanel = document.getElementById('newsletter-panel');
-    const newsletterLegal = document.getElementById('newsletter-legal');
-    const newsletterForm = document.getElementById('newsletter-form');
-    const newsletterEmail = document.getElementById('newsletter-email');
-    const newsletterConsent = document.getElementById('newsletter-consent');
-    const newsletterSubmit = document.getElementById('newsletter-submit');
-    const newsletterSpinner = document.getElementById('newsletter-spinner');
-    const newsletterSubmitLabel = document.getElementById('newsletter-submit-label');
-    const newsletterStatus = document.getElementById('newsletter-status');
-    const honeypot = document.getElementById('newsletter-website');
-    const newsletterSuccess = document.getElementById('newsletter-success');
-    const successTitle = document.getElementById('success-title');
-    const successText = document.getElementById('success-text');
-    let isSending = false;
-
-    function setSending(sending) {
-        isSending = sending;
-        newsletterSubmit.disabled = sending;
-        newsletterSubmit.classList.toggle('is-loading', sending);
-        newsletterSubmit.setAttribute('aria-busy', String(sending));
-        newsletterSpinner.hidden = !sending;
-        newsletterSubmitLabel.textContent = sending ? t('subscribing') : t('subscribe');
-        newsletterForm.classList.toggle('is-sending', sending);
-        newsletterEmail.readOnly = sending;
-        newsletterConsent.disabled = sending;
-        newsletterBack.disabled = sending;
-    }
-
-    function showSignupSuccess(email, alreadySubscribed) {
-        newsletterForm.reset();
-        newsletterForm.hidden = true;
-        lastSignup = {email, alreadySubscribed};
-        renderSignupSuccess();
-        newsletterSuccess.hidden = false;
-        newsletterBack.focus();
-    }
-
-    function renderSignupSuccess() {
-        const {email, alreadySubscribed} = lastSignup;
-        if (alreadySubscribed) {
-            successTitle.textContent = t('alreadyTitle');
-            successText.textContent = t('alreadyText')(email);
-        } else {
-            successTitle.textContent = t('successTitle');
-            successText.textContent = t('successText')(email);
+        function detectBrowser(ua) {
+            if (/Instagram/.test(ua)) return 'Instagram app';
+            if (/FBAN|FBAV|FB_IAB/.test(ua)) return 'Facebook app';
+            if (/TikTok|musical_ly|BytedanceWebview/.test(ua)) return 'TikTok app';
+            if (/LinkedInApp/.test(ua)) return 'LinkedIn app';
+            if (/Pinterest/.test(ua)) return 'Pinterest app';
+            if (/Snapchat/.test(ua)) return 'Snapchat app';
+            if (/WhatsApp/.test(ua)) return 'WhatsApp';
+            if (/Edg\//.test(ua)) return 'Edge';
+            if (/OPR\//.test(ua)) return 'Opera';
+            if (/SamsungBrowser/.test(ua)) return 'Samsung Internet';
+            if (/CriOS|Chrome\//.test(ua)) return 'Chrome';
+            if (/FxiOS|Firefox\//.test(ua)) return 'Firefox';
+            if (/Safari\//.test(ua)) return 'Safari';
+            return 'Other';
         }
-    }
 
-    const NEWSLETTER_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzZ4DXSE1MHEBm0YE2ja69Lr7MSzBOmjRJs6lUyJSHpe6pwrZc6FRbVRC4Y0FPeDphN/exec';
-
-    function detectOs(ua) {
-        if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
-        if (/Android/.test(ua)) return 'Android';
-        if (/CrOS/.test(ua)) return 'ChromeOS';
-        if (/Mac OS X|Macintosh/.test(ua)) return 'macOS';
-        if (/Windows/.test(ua)) return 'Windows';
-        if (/Linux/.test(ua)) return 'Linux';
-        return 'Other';
-    }
-
-    function detectBrowser(ua) {
-        if (/Instagram/.test(ua)) return 'Instagram app';
-        if (/musical_ly|TikTok|BytedanceWebview/.test(ua)) return 'TikTok app';
-        if (/FBAN|FBAV/.test(ua)) return 'Facebook app';
-        if (/LinkedInApp/.test(ua)) return 'LinkedIn app';
-        if (/WhatsApp/.test(ua)) return 'WhatsApp';
-        if (/Edg\//.test(ua)) return 'Edge';
-        if (/OPR\//.test(ua)) return 'Opera';
-        if (/SamsungBrowser/.test(ua)) return 'Samsung Internet';
-        if (/CriOS|Chrome\//.test(ua)) return 'Chrome';
-        if (/FxiOS|Firefox\//.test(ua)) return 'Firefox';
-        if (/Safari\//.test(ua)) return 'Safari';
-        return 'Other';
-    }
-
-    // Anonymous context sent with every visit and signup (no cookies, no identifiers)
-    function visitContext() {
-        let referrer = '';
-        try {
-            const host = document.referrer ? new URL(document.referrer).hostname : '';
-            if (host && host !== location.hostname) referrer = host.replace(/^www\./, '');
-        } catch {
+        function referrer() {
+            try {
+                if (!document.referrer) return 'direct';
+                const host = new URL(document.referrer).hostname.replace(/^www\./, '');
+                return host === location.hostname.replace(/^www\./, '') ? 'direct' : host;
+            } catch (e) { return 'direct'; }
         }
-        let timezone = 'unknown';
-        try {
-            timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
-        } catch {
-        }
+
         const query = new URLSearchParams(location.search);
         const ua = navigator.userAgent || '';
-        return {
-            page: location.pathname,
-            referrer: referrer || 'direct',
-            device: window.matchMedia('(max-width: 600px)').matches ? 'mobile' : 'desktop',
-            timezone,
-            browser_language: navigator.language || 'unknown',
-            site_language: currentLanguage,
+        const context = {
+            site: SITE,
+            visit_id: visitId,
+            page: location.pathname || '/',
+            referrer: referrer(),
+            device: (window.matchMedia('(max-width: 760px)').matches || /Mobi|Android|iPhone/.test(ua)) ? 'mobile' : 'desktop',
+            timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'unknown',
             os: detectOs(ua),
             browser: detectBrowser(ua),
             utm_source: query.get('utm_source') || '',
             utm_medium: query.get('utm_medium') || '',
-            utm_campaign: query.get('utm_campaign') || '',
+            utm_campaign: query.get('utm_campaign') || ''
         };
-    }
 
-    function recordVisit() {
-        if (!NEWSLETTER_ENDPOINT || !navigator.sendBeacon) return;
-        const visit = new URLSearchParams({type: 'visit', ...visitContext()});
-        navigator.sendBeacon(NEWSLETTER_ENDPOINT, visit);
-    }
-
-    recordVisit();
-    const CONSENT_VERSION = '2026-10-27';
-
-    // Views: 'home', 'about' or 'newsletter'. The body class drives the CSS transitions.
-    function setView(view) {
-        document.body.classList.toggle('view-about', view === 'about');
-        document.body.classList.toggle('view-newsletter', view === 'newsletter');
-    }
-
-    function replayCascade(elements) {
-        document.body.classList.add('is-replay');
-        elements.forEach(el => {
-            el.classList.remove('reveal');
-            void el.offsetWidth;
-            el.classList.add('reveal');
-        });
-    }
-
-    function showHomeButtons() {
-        backButton.hidden = true;
-        newsletterBack.hidden = true;
-        newsletterLegal.hidden = true;
-        aboutButton.hidden = false;
-        newsletterButton.hidden = false;
-    }
-
-    function hideHomeButtons() {
-        aboutButton.hidden = true;
-        newsletterButton.hidden = true;
-    }
-
-    aboutButton.addEventListener('click', () => {
-        hideHomeButtons();
-        backButton.hidden = false;
-        homeView.classList.add('is-hidden');
-        aboutView.classList.remove('is-hidden');
-        aboutView.inert = false;
-        setView('about');
-        replayCascade([...aboutView.querySelectorAll('.reveal'), backButton]);
-    });
-
-    backButton.addEventListener('click', () => {
-        aboutView.classList.add('is-hidden');
-        aboutView.inert = true;
-        homeView.classList.remove('is-hidden');
-        setView('home');
-        showHomeButtons();
-        replayCascade([...homeView.querySelectorAll('.reveal'), footerText, aboutButton, newsletterButton]);
-        aboutButton.focus({preventScroll: true});
-    });
-
-    newsletterButton.addEventListener('click', () => {
-        lastSignup = null;
-        newsletterForm.hidden = false;
-        newsletterSuccess.hidden = true;
-        newsletterStatus.textContent = '';
-        hideHomeButtons();
-        newsletterButton.setAttribute('aria-expanded', 'true');
-        newsletterBack.hidden = false;
-        newsletterLegal.hidden = false;
-        newsletterPanel.inert = false;
-        setView('newsletter');
-        replayCascade([newsletterLegal, newsletterBack]);
-        // Wait until the form has faded in before focusing it
-        setTimeout(() => newsletterEmail.focus({preventScroll: true}), 900);
-    });
-
-    newsletterBack.addEventListener('click', () => {
-        newsletterPanel.inert = true;
-        newsletterButton.setAttribute('aria-expanded', 'false');
-        newsletterStatus.textContent = '';
-        setView('home');
-        showHomeButtons();
-        replayCascade([footerText, aboutButton, newsletterButton]);
-        newsletterButton.focus({preventScroll: true});
-    });
-
-    newsletterForm.addEventListener('submit', async event => {
-        event.preventDefault();
-        if (isSending) return;
-        newsletterStatus.textContent = '';
-
-        if (honeypot.value) {
-            showSignupSuccess(newsletterEmail.value.trim(), false);
-            return;
+        function post(data, beacon) {
+            const body = new URLSearchParams(Object.assign({}, context, data));
+            if (beacon && navigator.sendBeacon) {
+                try { if (navigator.sendBeacon(API, body)) return Promise.resolve(); } catch (e) { /* fall back to fetch */ }
+            }
+            return fetch(API, { method: 'POST', mode: 'no-cors', body: body, keepalive: !!beacon });
         }
 
-        if (!newsletterEmail.checkValidity()) {
-            newsletterStatus.textContent = t('invalidEmail');
-            newsletterEmail.focus();
-            return;
+        // What happened during this visit (sent when the page is hidden or closed)
+        const state = { sections: [], clicks: [], popup: false, signedUp: false };
+        let visibleSince = document.visibilityState === 'visible' ? Date.now() : null;
+        let visibleMs = 0;
+        let lastSent = '';
+
+        function seconds() {
+            return Math.round((visibleMs + (visibleSince ? Date.now() - visibleSince : 0)) / 1000);
         }
 
-        if (!newsletterConsent.checked) {
-            newsletterStatus.textContent = t('consentRequired');
-            newsletterConsent.focus();
-            return;
+        function sendUpdate() {
+            if (!TRACK) return;
+            const data = {
+                type: 'visit_update',
+                seconds: seconds(),
+                deepest: state.sections[state.sections.length - 1] || '',
+                sections: state.sections.join(', '),
+                clicks: state.clicks.join(', '),
+                popup: state.popup ? 'yes' : '',
+                signed_up: state.signedUp ? 'yes' : ''
+            };
+            const key = JSON.stringify(data);
+            if (key === lastSent) return;
+            lastSent = key;
+            post(data, true);
         }
 
-        if (!NEWSLETTER_ENDPOINT) {
-            newsletterStatus.textContent = t('signupsSoon');
-            return;
+        if (TRACK) {
+            post({ type: 'visit' });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    if (visibleSince) { visibleMs += Date.now() - visibleSince; visibleSince = null; }
+                    sendUpdate();
+                } else if (!visibleSince) {
+                    visibleSince = Date.now();
+                }
+            });
+            window.addEventListener('pagehide', sendUpdate);
         }
 
-        const data = new URLSearchParams();
-        data.append('email', newsletterEmail.value.trim());
-        data.append('consent', 'yes');
-        data.append('consent_version', CONSENT_VERSION);
-        data.append('consent_text', document.getElementById('consent-text').textContent.replace(/\s+/g, ' ').trim());
-        data.append('consent_timestamp', new Date().toISOString());
-        data.append('language', currentLanguage);
-        Object.entries(visitContext()).forEach(([key, value]) => data.append(key, value));
+        // Sections seen, in page order
+        const ORDER = ['who_we_are', 'what_drives_us', 'more_than_clothes', 'our_nature', 'our_brands', 'future', 'closing', 'footer'];
+        function section(name) {
+            if (state.sections.includes(name)) return;
+            state.sections.push(name);
+            state.sections.sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+        }
+        if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) { section(e.target.dataset.section); io.unobserve(e.target); }
+                });
+            }, { threshold: 0.35 });
+            document.querySelectorAll('[data-section]').forEach((el) => io.observe(el));
+        }
 
-        setSending(true);
-        try {
-            const response = await fetch(NEWSLETTER_ENDPOINT, {method: 'POST', body: data});
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const raw = await response.text();
+        function click(name) {
+            if (!state.clicks.includes(name)) state.clicks.push(name);
+        }
+
+        function popup() { state.popup = true; }
+
+        // Resolves with the sheet's answer: { ok, duplicate } (or { ok: true } if it can't be read)
+        async function signup(fields) {
+            const body = new URLSearchParams(Object.assign({}, context,
+                { consent: 'yes', consent_timestamp: new Date().toISOString() }, fields));
             let result;
             try {
-                result = JSON.parse(raw);
-            } catch {
-                throw new Error(`Endpoint did not return JSON.`);
+                const response = await fetch(API, { method: 'POST', body: body });
+                result = await response.json();
+            } catch (e) {
+                // Answer not readable (blocked by the browser or an extension): send it the simple way
+                await fetch(API, { method: 'POST', mode: 'no-cors', body: body });
+                result = { ok: true };
             }
-            if (!result.ok) throw new Error(result.error || 'Signup rejected');
-            showSignupSuccess(data.get('email'), result.duplicate === true);
-        } catch (error) {
-            console.error('Newsletter signup failed:', error);
-            newsletterStatus.textContent = t('signupError');
-        } finally {
-            setSending(false);
-        }
-    });
-
-    applyLanguage(currentLanguage);
-
-    // iPhone / iPad only: the page is a little taller than the screen (so the photo reaches the
-    // bottom edge). If it gets dragged, glide it back to the top once the finger is lifted,
-    // so it feels like an elastic bounce instead of a real scroll.
-    if (CSS.supports('-webkit-touch-callout', 'none')) {
-        let touching = false;
-        let settleTimer = null;
-
-        function springBack() {
-            const typing = document.activeElement && document.activeElement.matches('input, textarea');
-            if (touching || typing || window.scrollY <= 0) return;
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            if (result && result.ok) {
+                state.signedUp = true;
+                sendUpdate();
+            }
+            return result || { ok: false };
         }
 
-        function scheduleSpringBack() {
-            clearTimeout(settleTimer);
-            settleTimer = setTimeout(springBack, 120);
-        }
+        return { section: section, click: click, popup: popup, signup: signup };
+    })();
 
-        window.addEventListener('touchstart', () => {
-            touching = true;
-            clearTimeout(settleTimer);
-        }, {passive: true});
-        window.addEventListener('touchend', () => {
-            touching = false;
-            scheduleSpringBack();
-        }, {passive: true});
-        window.addEventListener('touchcancel', () => {
-            touching = false;
-            scheduleSpringBack();
-        }, {passive: true});
-        window.addEventListener('scroll', scheduleSpringBack, {passive: true});
-        // After the keyboard closes, return to the top as well
-        document.addEventListener('focusout', scheduleSpringBack);
+    // Which button opened the popup / was clicked (for the stats)
+    function earlyAccessSpot() {
+        const root = document.documentElement;
+        if (root.classList.contains('cta-final')) return 'early_access_footer';
+        return parseFloat(getComputedStyle(root).getPropertyValue('--p')) < 0.5 ? 'early_access_first_screen' : 'early_access_top_bar';
     }
-</script>
+    document.getElementById('nav-about').addEventListener('click', () => window.elseStats.click('about_us'));
+    document.getElementById('nav-why').addEventListener('click', () => window.elseStats.click('why_else'));
+    document.querySelector('.hero-logo').addEventListener('click', () => window.elseStats.click('logo'));
 
+    // Early access popup
+    (function () {
+        const modal = document.getElementById('early-modal');
+        const form = document.getElementById('early-form');
+        const email = document.getElementById('early-email');
+        const consent = document.getElementById('early-consent');
+        const error = document.getElementById('early-error');
+        const submit = form.querySelector('.modal-submit');
+        let lastFocus = null;
+        let openedFrom = '';
+
+        function open(mode, from) {
+            lastFocus = document.activeElement;
+            openedFrom = from || '';
+            window.elseStats.click(openedFrom);
+            window.elseStats.popup();
+            modal.classList.toggle('ask', mode === 'ask');
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => (mode === 'ask' ? document.getElementById('ask-continue') : email).focus(), 200);
+        }
+
+        function close() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            if (lastFocus) lastFocus.focus();
+        }
+
+        document.getElementById('nav-early').addEventListener('click', () => open('form', earlyAccessSpot()));
+        document.getElementById('ask-else').addEventListener('click', () => open('ask', 'ask_else'));
+        // From the assistant message to the email form
+        document.getElementById('ask-continue').addEventListener('click', () => {
+            modal.classList.remove('ask');
+            setTimeout(() => email.focus(), 50);
+        });
+        modal.querySelector('.modal-close').addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('open')) close();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            error.textContent = '';
+            const value = email.value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                error.textContent = 'Please enter a valid email.';
+                email.focus();
+                return;
+            }
+            if (!consent.checked) {
+                error.textContent = 'Please tick the box to continue.';
+                return;
+            }
+            const label = submit.querySelector('.submit-label');
+            submit.disabled = true;
+            email.readOnly = true;
+            modal.classList.add('saving');
+            label.textContent = 'Saving…';
+            try {
+                const result = await window.elseStats.signup({
+                    email: value,
+                    button: openedFrom,
+                    consent_version: 'web-v2-2026-11',
+                    consent_text: consent.closest('label').textContent.trim()
+                });
+                if (!result.ok) {
+                    error.textContent = result.error === 'invalid_email'
+                        ? 'Please enter a valid email.'
+                        : 'Something went wrong. Please try again.';
+                    return;
+                }
+                const title = document.getElementById('done-title');
+                const text = document.getElementById('done-text');
+                if (result.duplicate) {
+                    title.textContent = "You're already on the list";
+                    text.textContent = value + ' is already signed up. We\'ll let you know as soon as early access opens.';
+                } else {
+                    title.textContent = "You're on the list";
+                    text.textContent = "We'll let you know as soon as early access opens.";
+                }
+                modal.classList.add('sent');
+            } catch (err) {
+                error.textContent = 'Something went wrong. Please try again.';
+            } finally {
+                modal.classList.remove('saving');
+                label.textContent = 'Sign me up';
+                submit.disabled = false;
+                email.readOnly = false;
+            }
+        });
+    })();
+
+    // Fade sections in as they scroll into view
+    (function () {
+        const items = document.querySelectorAll('.reveal');
+        if (!('IntersectionObserver' in window)) {
+            items.forEach((el) => el.classList.add('in'));
+            return;
+        }
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((e) => {
+                if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.15 });
+        items.forEach((el) => io.observe(el));
+    })();
+</script>
 </body>
 </html>
