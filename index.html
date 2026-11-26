@@ -227,7 +227,7 @@
             -webkit-backdrop-filter: blur(14px) saturate(170%);
             backdrop-filter: blur(14px) saturate(170%);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12), 0 6px 22px rgba(15, 30, 60, 0.16);
+            box-shadow: 0 4px 18px rgba(15, 30, 60, 0.12);
             border-radius: 999px;
             padding: 7px 22px;
             cursor: pointer;
@@ -274,7 +274,7 @@
             -webkit-backdrop-filter: blur(14px) saturate(170%);
             backdrop-filter: blur(14px) saturate(170%);
             border-color: rgba(255, 255, 255, 0.6);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.15), 0 8px 26px rgba(40, 70, 140, 0.18);
+            box-shadow: 0 6px 22px rgba(40, 70, 140, 0.14);
         }
 
         .on-light.cta-final #nav-early:hover { background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.2)); }
@@ -338,8 +338,8 @@
         .screen {
             min-height: 100vh;
             min-height: 100svh;
-            padding-top: calc(var(--bar) + clamp(20px, 3vw, 48px));
-            padding-bottom: clamp(32px, 4vw, 64px);
+            padding-top: calc(var(--bar) + clamp(8px, 1vw, 16px));
+            padding-bottom: clamp(12px, 1.5vw, 24px);
         }
 
         .screen-center { display: flex; flex-direction: column; justify-content: center; }
@@ -347,10 +347,10 @@
 
         /* ---------- Word strips ---------- */
         .strip {
-            padding: 0 clamp(4px, 0.4vw, 8px);
-            margin: 0 0 clamp(48px, 6vw, 96px);
+            padding: 0 5px;
+            margin: 0 0 clamp(40px, 5vw, 80px);
             color: var(--soft);
-            font-size: clamp(9px, 0.8vw, 12px);
+            font-size: clamp(11px, 1.05vw, 16px);
             font-weight: 400;
             text-transform: uppercase;
             letter-spacing: 0.18em;
@@ -579,7 +579,7 @@
         .footer-mark {
             position: absolute;
             right: clamp(20px, 5vw, 90px);
-            bottom: clamp(62px, 5.6vw, 96px);
+            bottom: clamp(18px, 1.8vw, 28px);   /* same as the footer's bottom padding: lines up with the text */
             width: clamp(180px, 30vw, 500px);
             pointer-events: none;
         }
@@ -594,7 +594,8 @@
             flex-wrap: wrap;
             gap: 10px clamp(28px, 3.6vw, 60px);
             align-items: flex-end;
-            font-size: clamp(10px, 0.8vw, 12px);
+            font-size: clamp(13px, 1.05vw, 16px);
+            line-height: 1.3;
             font-weight: 400;
         }
 
@@ -733,7 +734,7 @@
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.10));
             -webkit-backdrop-filter: blur(14px) saturate(170%);
             backdrop-filter: blur(14px) saturate(170%);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12), 0 6px 20px rgba(15, 30, 60, 0.14);
+            box-shadow: 0 4px 16px rgba(15, 30, 60, 0.12);
             color: #fff;
             font: 500 13px var(--sans);
             letter-spacing: 0.06em;
@@ -802,11 +803,12 @@
             .hero-content > div { max-width: 100%; }
 
             /* Sections keep their natural height on phones (no big white gaps) */
-            .screen { min-height: 0; padding-top: 64px; padding-bottom: 64px; }
-            .drives.screen { padding-top: calc(var(--bar) + 40px); }
-            .brands.screen { padding-top: 72px; padding-bottom: 72px; }
+            .screen { min-height: 0; padding-top: 28px; padding-bottom: 28px; }
+            .drives.screen { padding-top: calc(var(--bar) + 20px); }
+            .brands.screen { padding-top: 56px; padding-bottom: 56px; margin-top: 20px; }
+            .ask-row { margin-top: 28px; }
 
-            .strip { font-size: 10px; letter-spacing: 0.2em; padding: 0 9vw; margin: 0 0 32px; }
+            .strip { font-size: 12px; letter-spacing: 0.12em; padding: 0 5px; margin: 0 0 28px; }
             .strip-row + .strip-row { margin-top: 18px; }
             .closing { font-size: 8.6vw; line-height: 1.12; padding: 0 9vw; }
             .closing br { display: none; }
@@ -830,7 +832,7 @@
             .footer-cta .kicker { font-size: 17px; margin-bottom: 18px; }
             .footer-cta .note { font-size: 17px; line-height: 1.3; margin-top: 20px; max-width: 300px; }
             .footer-mark { position: relative; right: auto; bottom: auto; width: 82vw; margin: auto 0 30px; }
-            .footer-row { flex-direction: column; align-items: center; gap: 10px; margin-top: 0; font-size: 13px; font-weight: 500; }
+            .footer-row { flex-direction: column; align-items: center; gap: 10px; margin-top: 0; font-size: 15px; font-weight: 500; }
             .footer-row .follow { order: -1; }
         }
     </style>
@@ -1157,7 +1159,7 @@
 
             // Final size and spot in the footer: the slot gets the size of the scaled button
             const slot = document.getElementById('waitlist-slot');
-            const target = mobile ? Math.min(vw * 0.82, 360) : Math.max(240, Math.min(vw * 0.22, 340));
+            const target = mobile ? Math.min(vw * 0.62, 260) : Math.max(240, Math.min(vw * 0.22, 340));
             const sF = target / wE;
             early.style.setProperty('--sF', sF);
             slot.style.width = target + 'px';
@@ -1279,7 +1281,7 @@
             if (beacon && navigator.sendBeacon) {
                 try { if (navigator.sendBeacon(API, body)) return Promise.resolve(); } catch (e) { /* fall back to fetch */ }
             }
-            return fetch(API, { method: 'POST', mode: 'no-cors', body: body, keepalive: !!beacon });
+            return fetch(API, { method: 'POST', mode: 'no-cors', body: body, keepalive: !!beacon }).catch(() => {});
         }
 
         // What happened during this visit (sent when the page is hidden or closed)
